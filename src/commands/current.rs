@@ -8,14 +8,14 @@ use crate::git::GitConfigManager;
 pub fn execute() -> Result<()> {
     let config = Config::load()?;
     let git = GitConfigManager::new()?;
-    
+
     println!("{}", "当前 Git 身份:".bold());
     println!();
-    
+
     // 项目级配置
     let local_name = git.get_user_name(false);
     let local_email = git.get_user_email(false);
-    
+
     if local_name.is_some() || local_email.is_some() {
         println!(
             "  {} {} <{}>",
@@ -26,11 +26,11 @@ pub fn execute() -> Result<()> {
     } else {
         println!("  {} {}", "项目级:".dimmed(), "未设置".dimmed());
     }
-    
+
     // 全局配置
     let global_name = git.get_user_name(true);
     let global_email = git.get_user_email(true);
-    
+
     if global_name.is_some() || global_email.is_some() {
         println!(
             "  {} {} <{}>",
@@ -41,26 +41,22 @@ pub fn execute() -> Result<()> {
     } else {
         println!("  {} {}", "全局级:".dimmed(), "未设置".dimmed());
     }
-    
+
     println!();
-    
+
     // 实际使用的配置
     let effective_name = git.get_effective_user_name();
     let effective_email = git.get_effective_user_email();
-    
+
     if let (Some(name), Some(email)) = (&effective_name, &effective_email) {
-        println!(
-            "  {} {} <{}>",
-            "实际使用:".bold(),
-            name,
-            email.cyan()
-        );
-        
+        println!("  {} {} <{}>", "实际使用:".bold(), name, email.cyan());
+
         // 尝试匹配已知身份
-        let matched = config.identities.iter().find(|i| {
-            &i.name == name && &i.email == email
-        });
-        
+        let matched = config
+            .identities
+            .iter()
+            .find(|i| &i.name == name && &i.email == email);
+
         if let Some(identity) = matched {
             println!(
                 "  {} {}",
@@ -90,7 +86,7 @@ pub fn execute() -> Result<()> {
         println!("运行 {} 添加身份", "gid add".cyan());
         println!("运行 {} 切换身份", "gid switch <id>".cyan());
     }
-    
+
     // 显示仓库信息
     if git.is_in_repo() {
         println!();
@@ -98,7 +94,6 @@ pub fn execute() -> Result<()> {
             println!("  {} {}", "Remote:".dimmed(), remote.dimmed());
         }
     }
-    
+
     Ok(())
 }
-

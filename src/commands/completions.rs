@@ -10,9 +10,8 @@ pub fn execute(shell: ShellType) -> Result<()> {
     let mut cmd = Cli::command();
     let name = cmd.get_name().to_string();
     let shell: Shell = shell.into();
-    
+
     generate(shell, &mut cmd, name, &mut io::stdout());
-    
+
     Ok(())
 }
-

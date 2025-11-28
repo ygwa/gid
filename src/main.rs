@@ -1,19 +1,19 @@
+mod audit;
 mod cli;
 mod commands;
 mod config;
 mod git;
+mod gpg;
 mod rules;
 mod ssh;
-mod gpg;
-mod audit;
 
 use anyhow::Result;
-use cli::{Cli, Commands};
 use clap::Parser;
+use cli::{Cli, Commands};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     match cli.command {
         Commands::Switch { identity, global } => {
             commands::switch::execute(&identity, global)?;
@@ -24,10 +24,10 @@ fn main() -> Result<()> {
         Commands::Current => {
             commands::current::execute()?;
         }
-        Commands::Add { 
-            id, 
-            name, 
-            email, 
+        Commands::Add {
+            id,
+            name,
+            email,
             description,
             ssh_key,
             gpg_key,
@@ -65,7 +65,6 @@ fn main() -> Result<()> {
             commands::completions::execute(shell)?;
         }
     }
-    
+
     Ok(())
 }
-
