@@ -1,8 +1,10 @@
 use anyhow::{Context, Result};
 use colored::Colorize;
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
+
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 use crate::cli::HookAction;
 use crate::git::GitConfigManager;
@@ -102,7 +104,7 @@ fn install_local_hook() -> Result<()> {
     // 写入 hook
     fs::write(&hook_path, PRE_COMMIT_HOOK).context("无法写入 hook 文件")?;
 
-    // 设置可执行权限
+    // 设置可执行权限 (仅 Unix)
     #[cfg(unix)]
     fs::set_permissions(&hook_path, fs::Permissions::from_mode(0o755))?;
 
@@ -125,7 +127,7 @@ fn install_global_hook() -> Result<()> {
     // 写入 hook
     fs::write(&hook_path, PRE_COMMIT_HOOK).context("无法写入 hook 文件")?;
 
-    // 设置可执行权限
+    // 设置可执行权限 (仅 Unix)
     #[cfg(unix)]
     fs::set_permissions(&hook_path, fs::Permissions::from_mode(0o755))?;
 
