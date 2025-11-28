@@ -284,7 +284,7 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
 }
 
 mod shellexpand {
-    pub fn tilde(path: &str) -> std::borrow::Cow<str> {
+    pub fn tilde(path: &str) -> std::borrow::Cow<'_, str> {
         if let Some(stripped) = path.strip_prefix("~/") {
             if let Some(home) = home::home_dir() {
                 return std::borrow::Cow::Owned(format!("{}/{stripped}", home.display()));
