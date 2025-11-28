@@ -80,12 +80,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
+      
+      - name: List artifacts
+        run: |
+          echo "=== Artifacts directory structure ==="
+          find artifacts -type f
+          echo "=== End ==="
       
       - name: Create checksums
         run: |
           cd artifacts
-          find . -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} . \;
+          # Files are directly in artifacts/ with merge-multiple: true
           sha256sum gid-* > checksums.txt
+          echo "=== Checksums ==="
           cat checksums.txt
       
       - name: Extract version
