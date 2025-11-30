@@ -2,16 +2,17 @@ use anyhow::{Context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// SSH 配置管理器
+/// SSH Configuration Manager
 pub struct SshManager {
     ssh_dir: PathBuf,
     config_path: PathBuf,
 }
 
 impl SshManager {
-    /// 创建新的 SSH 管理器
+    /// Create new SSH manager
     pub fn new() -> Result<Self> {
-        let home = home::home_dir().ok_or_else(|| anyhow::anyhow!("无法获取用户主目录"))?;
+        let home =
+            home::home_dir().ok_or_else(|| anyhow::anyhow!("Could not get user home directory"))?;
         let ssh_dir = home.join(".ssh");
         let config_path = ssh_dir.join("config");
 
@@ -21,12 +22,12 @@ impl SshManager {
         })
     }
 
-    /// 确保 SSH 目录存在
+    /// Ensure SSH directory exists
     pub fn ensure_ssh_dir(&self) -> Result<()> {
         if !self.ssh_dir.exists() {
-            fs::create_dir_all(&self.ssh_dir).context("无法创建 .ssh 目录")?;
+            fs::create_dir_all(&self.ssh_dir).context("Could not create .ssh directory")?;
 
-            // 设置正确的权限 (700)
+            // Set correct permissions (700)
             #[cfg(unix)]
             {
                 use std::os::unix::fs::PermissionsExt;
@@ -36,13 +37,13 @@ impl SshManager {
         Ok(())
     }
 
-    /// 检查密钥文件是否存在
+    /// Check if key file exists
     pub fn key_exists(&self, key_path: &Path) -> bool {
         let expanded = self.expand_path(key_path);
         expanded.exists()
     }
 
-    /// 获取密钥对应的公钥路径
+    /// Get public key path for private key
     pub fn get_public_key_path(&self, private_key: &Path) -> PathBuf {
         let mut pub_path = private_key.to_path_buf();
         let file_name = pub_path
@@ -54,16 +55,16 @@ impl SshManager {
         pub_path
     }
 
-    /// 读取公钥内容
+    /// Read public key content
     pub fn read_public_key(&self, private_key: &Path) -> Result<String> {
         let pub_path = self.get_public_key_path(private_key);
         let expanded = self.expand_path(&pub_path);
 
         fs::read_to_string(&expanded)
-            .with_context(|| format!("无法读取公钥文件: {}", expanded.display()))
+            .with_context(|| format!("Could not read public key file: {}", expanded.display()))
     }
 
-    /// 添加 SSH 配置条目
+    /// Add SSH configuration entry
     pub fn add_host_config(
         &self,
         host_alias: &str,
@@ -89,25 +90,25 @@ Host {}
             identity_file.display()
         );
 
-        // 读取现有配置
+        // Read existing configuration
         let mut existing = if self.config_path.exists() {
-            fs::read_to_string(&self.config_path).context("无法读取 SSH 配置文件")?
+            fs::read_to_string(&self.config_path).context("Could not read SSH config file")?
         } else {
             String::new()
         };
 
-        // 检查是否已存在该 Host 配置
+        // Check if Host config already exists
         if existing.contains(&format!("Host {host_alias}")) {
-            // 移除旧配置
+            // Remove old configuration
             existing = self.remove_host_from_config(&existing, host_alias);
         }
 
-        // 添加新配置
+        // Add new configuration
         existing.push_str(&config_entry);
 
-        fs::write(&self.config_path, existing).context("无法写入 SSH 配置文件")?;
+        fs::write(&self.config_path, existing).context("Could not write SSH config file")?;
 
-        // 设置正确的权限 (600)
+        // Set correct permissions (600)
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -117,14 +118,14 @@ Host {}
         Ok(())
     }
 
-    /// 从配置中移除指定 Host
+    /// Remove specified Host from configuration
     fn remove_host_from_config(&self, config: &str, host_alias: &str) -> String {
         let mut result = String::new();
         let mut skip = false;
         let mut skip_comment = false;
 
         for line in config.lines() {
-            // 检查是否是 gid 管理的注释
+            // Check if it is a gid managed comment
             if line.contains("# gid managed") && line.contains(host_alias) {
                 skip_comment = true;
                 continue;
@@ -157,7 +158,7 @@ Host {}
         result
     }
 
-    /// 生成新的 SSH 密钥对
+    /// Generate new SSH key pair
     pub fn generate_key(&self, name: &str, email: &str) -> Result<PathBuf> {
         self.ensure_ssh_dir()?;
 
@@ -165,10 +166,10 @@ Host {}
         let key_path = self.ssh_dir.join(&key_name);
 
         if key_path.exists() {
-            anyhow::bail!("密钥文件已存在: {}", key_path.display());
+            anyhow::bail!("Key file already exists: {}", key_path.display());
         }
 
-        // 使用 ssh-keygen 生成密钥
+        // Generate key using ssh-keygen
         let output = std::process::Command::new("ssh-keygen")
             .args([
                 "-t",
@@ -178,20 +179,20 @@ Host {}
                 "-f",
                 key_path.to_str().unwrap(),
                 "-N",
-                "", // 空密码
+                "", // Empty passphrase
             ])
             .output()
-            .context("无法执行 ssh-keygen")?;
+            .context("Could not execute ssh-keygen")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("ssh-keygen 失败: {stderr}");
+            anyhow::bail!("ssh-keygen failed: {stderr}");
         }
 
         Ok(key_path)
     }
 
-    /// 展开路径中的 ~ 符号
+    /// Expand ~ symbol in path
     fn expand_path(&self, path: &Path) -> PathBuf {
         if let Some(path_str) = path.to_str() {
             if let Some(stripped) = path_str.strip_prefix("~/") {
@@ -203,7 +204,7 @@ Host {}
         path.to_path_buf()
     }
 
-    /// 为身份配置 SSH
+    /// Configure SSH for identity
     pub fn configure_for_identity(
         &self,
         identity_id: &str,
@@ -215,7 +216,7 @@ Host {}
         Ok(host_alias)
     }
 
-    /// 检查 ssh-agent 是否运行
+    /// Check if ssh-agent is running
     pub fn is_agent_running(&self) -> bool {
         std::process::Command::new("ssh-add")
             .arg("-l")
@@ -224,12 +225,12 @@ Host {}
             .unwrap_or(false)
     }
 
-    /// 添加密钥到 ssh-agent
+    /// Add key to ssh-agent
     pub fn add_to_agent(&self, key_path: &Path) -> Result<()> {
         let expanded = self.expand_path(key_path);
 
         if !expanded.exists() {
-            anyhow::bail!("SSH 密钥文件不存在: {}", expanded.display());
+            anyhow::bail!("SSH key file does not exist: {}", expanded.display());
         }
 
         let output = std::process::Command::new("ssh-add")
@@ -239,13 +240,14 @@ Host {}
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("添加密钥到 ssh-agent 失败: {}", stderr);
+            anyhow::bail!("Failed to add key to ssh-agent: {stderr}");
         }
 
         Ok(())
     }
 
-    /// 从 ssh-agent 移除密钥
+    /// Remove key from ssh-agent
+    #[allow(dead_code)]
     pub fn remove_from_agent(&self, key_path: &Path) -> Result<()> {
         let expanded = self.expand_path(key_path);
 
@@ -257,16 +259,17 @@ Host {}
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            // 忽略密钥不存在的错误
+            // Ignore key not found error
             if !stderr.contains("not found") {
-                anyhow::bail!("从 ssh-agent 移除密钥失败: {}", stderr);
+                anyhow::bail!("Failed to remove key from ssh-agent: {stderr}");
             }
         }
 
         Ok(())
     }
 
-    /// 列出 ssh-agent 中的密钥
+    /// List keys in ssh-agent
+    #[allow(dead_code)]
     pub fn list_agent_keys(&self) -> Result<Vec<String>> {
         let output = std::process::Command::new("ssh-add")
             .arg("-l")
@@ -287,7 +290,8 @@ Host {}
         Ok(keys)
     }
 
-    /// 清空 ssh-agent 中的所有密钥
+    /// Clear all keys from ssh-agent
+    #[allow(dead_code)]
     pub fn clear_agent(&self) -> Result<()> {
         let output = std::process::Command::new("ssh-add")
             .arg("-D")
@@ -296,7 +300,7 @@ Host {}
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            anyhow::bail!("清空 ssh-agent 失败: {}", stderr);
+            anyhow::bail!("Failed to clear ssh-agent: {stderr}");
         }
 
         Ok(())

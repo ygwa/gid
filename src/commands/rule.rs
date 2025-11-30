@@ -7,7 +7,7 @@ use crate::config::Config;
 use crate::git::GitConfigManager;
 use crate::rules::{MatchContext, Rule, RuleEngine, RuleType};
 
-/// 执行规则命令
+/// Execute rule command
 pub fn execute(action: RuleAction) -> Result<()> {
     match action {
         RuleAction::Add {
@@ -22,7 +22,7 @@ pub fn execute(action: RuleAction) -> Result<()> {
     }
 }
 
-/// 添加规则
+/// Add rule
 fn add_rule(
     rule_type: CliRuleType,
     pattern: String,
@@ -31,12 +31,12 @@ fn add_rule(
 ) -> Result<()> {
     let mut config = Config::load()?;
 
-    // 验证身份存在
+    // Verify identity exists
     if config.find_identity(&identity).is_none() {
         anyhow::bail!("Identity '{identity}' does not exist");
     }
 
-    // 创建规则
+    // Create rule
     let rule = match rule_type {
         CliRuleType::Path => Rule::path(pattern.clone(), identity.clone()),
         CliRuleType::Remote => Rule::remote(pattern.clone(), identity.clone()),
@@ -62,7 +62,7 @@ fn add_rule(
     Ok(())
 }
 
-/// 列出所有规则
+/// List all rules
 fn list_rules() -> Result<()> {
     let config = Config::load()?;
 
@@ -120,7 +120,7 @@ fn list_rules() -> Result<()> {
     Ok(())
 }
 
-/// 删除规则
+/// Remove rule
 fn remove_rule(index: usize) -> Result<()> {
     let mut config = Config::load()?;
 
@@ -157,7 +157,7 @@ fn remove_rule(index: usize) -> Result<()> {
     Ok(())
 }
 
-/// 测试规则匹配
+/// Test rule matching
 fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
     let config = Config::load()?;
 
@@ -166,10 +166,10 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
         return Ok(());
     }
 
-    // 构建匹配上下文
+    // Build match context
     let mut context = MatchContext::new();
 
-    // 路径
+    // Path
     let test_path = path.unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
     context = context.with_path(test_path.clone());
 
@@ -195,7 +195,7 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
 
     let engine = RuleEngine::new(&config.rules);
 
-    // 显示所有匹配的规则
+    // Show all matched rules
     let matched_rules = engine.match_all(&context);
 
     if matched_rules.is_empty() {
@@ -205,7 +205,7 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
         for (i, rule) in matched_rules.iter().enumerate() {
             let marker = if i == 0 { "→".green() } else { " ".into() };
             println!(
-                "  {} [{}] {} -> {} (优先级: {})",
+                "  {} [{}] {} -> {} (Priority: {})",
                 marker,
                 rule.type_name(),
                 rule.pattern(),

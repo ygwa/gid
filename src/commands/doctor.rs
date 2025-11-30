@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::git::GitConfigManager;
 use crate::rules::{MatchContext, RuleEngine};
 
-/// 检查当前目录的身份配置
+/// Check identity configuration in current directory
 pub fn execute(fix: bool) -> Result<()> {
     let config = Config::load()?;
     let git = GitConfigManager::new()?;
@@ -16,7 +16,7 @@ pub fn execute(fix: bool) -> Result<()> {
     let mut issues = Vec::new();
     let mut suggestions = Vec::new();
 
-    // 1. 检查是否在 Git 仓库中
+    // 1. Check if in Git repository
     if !git.is_in_repo() {
         println!("{} Current directory is not a Git repository", "!".yellow());
         return Ok(());
@@ -24,7 +24,7 @@ pub fn execute(fix: bool) -> Result<()> {
 
     let current_dir = std::env::current_dir()?;
 
-    // 2. 获取当前配置
+    // 2. Get current configuration
     let current_name = git.get_effective_user_name();
     let current_email = git.get_effective_user_email();
 
@@ -32,7 +32,7 @@ pub fn execute(fix: bool) -> Result<()> {
     if let (Some(ref name), Some(ref email)) = (&current_name, &current_email) {
         println!("  {} <{}>", name, email.cyan());
 
-        // 检查是否是已知身份
+        // Check if it is a known identity
         let known = config
             .identities
             .iter()
@@ -53,32 +53,36 @@ pub fn execute(fix: bool) -> Result<()> {
 
     println!();
 
-    // 3. 检查 .gid 项目配置
+    // 3. Check .gid project config
     if let Ok(Some(project_config)) = crate::config::ProjectConfig::load_from_dir(&current_dir) {
         let project_identity = project_config.identity;
         println!("Project Config (.gid):");
-        println!("  Expected Identity: {}", format!("[{}]", project_identity).cyan());
+        println!(
+            "  Expected Identity: {}",
+            format!("[{project_identity}]").cyan()
+        );
 
         if let Some(identity) = config.find_identity(&project_identity) {
-            // 检查是否匹配
+            // Check if matches
             if current_name.as_ref() != Some(&identity.name)
                 || current_email.as_ref() != Some(&identity.email)
             {
                 issues.push(format!(
-                    "Current identity does not match project config (expected: [{}])",
-                    project_identity
+                    "Current identity does not match project config (expected: [{project_identity}])"
                 ));
-                suggestions.push(format!("gid switch {}", project_identity));
+                suggestions.push(format!("gid switch {project_identity}"));
             } else {
                 println!("  {} Identity matches", "✓".green());
             }
         } else {
-            issues.push(format!("Project configured identity '{}' does not exist", project_identity));
+            issues.push(format!(
+                "Project configured identity '{project_identity}' does not exist"
+            ));
         }
         println!();
     }
 
-    // 4. 检查规则匹配
+    // 4. Check rule matching
     if !config.rules.is_empty() {
         let mut context = MatchContext::new().with_path(current_dir.clone());
 
@@ -115,20 +119,23 @@ pub fn execute(fix: bool) -> Result<()> {
         }
     }
 
-    // 5. 检查 SSH 配置
+    // 5. Check SSH configuration
     if let Some(ref email) = current_email {
         let identity = config.identities.iter().find(|i| &i.email == email);
         if let Some(identity) = identity {
             if let Some(ref ssh_key) = identity.ssh_key {
                 let ssh = crate::ssh::SshManager::new()?;
                 if !ssh.key_exists(ssh_key) {
-                    issues.push(format!("SSH key file does not exist: {}", ssh_key.display()));
+                    issues.push(format!(
+                        "SSH key file does not exist: {}",
+                        ssh_key.display()
+                    ));
                 }
             }
         }
     }
 
-    // 6. 输出结果
+    // 6. Output results
     println!();
 
     if issues.is_empty() {
@@ -143,7 +150,7 @@ pub fn execute(fix: bool) -> Result<()> {
             println!();
             println!("Fixing...");
 
-            // 执行第一个建议
+            // Execute first suggestion
             if let Some(suggestion) = suggestions.first() {
                 if suggestion.starts_with("gid switch ") {
                     let identity_id = suggestion.trim_start_matches("gid switch ");

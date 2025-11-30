@@ -58,7 +58,9 @@ pub fn execute(
     let email = if let Some(email) = email {
         email
     } else {
-        Input::<String>::new().with_prompt("Email").interact_text()?
+        Input::<String>::new()
+            .with_prompt("Email")
+            .interact_text()?
     };
 
     if !email.contains('@') || !email.contains('.') {
@@ -272,7 +274,9 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
                 return Ok(None);
             }
 
-            let index: usize = index.parse().map_err(|_| anyhow::anyhow!("Invalid index"))?;
+            let index: usize = index
+                .parse()
+                .map_err(|_| anyhow::anyhow!("Invalid index"))?;
             if index == 0 || index > keys.len() {
                 anyhow::bail!("Index out of range");
             }

@@ -77,7 +77,11 @@ pub fn execute() -> Result<()> {
                     "(Name mismatch)".dimmed()
                 );
             } else {
-                println!("  {} {}", "⚠".yellow(), "No configured identity matched".yellow());
+                println!(
+                    "  {} {}",
+                    "⚠".yellow(),
+                    "No configured identity matched".yellow()
+                );
             }
         }
     } else {

@@ -6,27 +6,27 @@ mod common;
 
 #[test]
 fn test_scenario_simple_config() {
-    // 场景：用户在新项目中创建一个简单的 .gid 文件来指定身份
+    // Scenario: User creates a simple .gid file in new project to specify identity
     let (temp_dir, _repo) = common::setup_repo();
-    
-    // 用户创建 .gid 文件
+
+    // User creates .gid file
     fs::write(temp_dir.path().join(".gid"), "work\n").unwrap();
-    
-    // 用户运行 doctor 检查配置
+
+    // User runs doctor to check configuration
     let mut cmd = Command::cargo_bin("gid").unwrap();
     cmd.current_dir(temp_dir.path())
         .arg("doctor")
         .assert()
         .success()
-        .stdout(predicate::str::contains("期望身份: [work]"));
+        .stdout(predicate::str::contains("Expected Identity: [work]"));
 }
 
 #[test]
 fn test_scenario_toml_config() {
-    // 场景：用户使用 TOML 格式配置复杂的项目规则
+    // Scenario: User uses TOML format for complex project rules
     let (temp_dir, _repo) = common::setup_repo();
-    
-    // 用户创建包含规则的 .gid 文件
+
+    // User creates .gid file with rules
     let config = r#"
 identity = "personal"
 [[rules]]
@@ -36,12 +36,12 @@ identity = "personal"
 priority = 100
 "#;
     fs::write(temp_dir.path().join(".gid"), config).unwrap();
-    
-    // 用户运行 doctor 检查配置
+
+    // User runs doctor to check configuration
     let mut cmd = Command::cargo_bin("gid").unwrap();
     cmd.current_dir(temp_dir.path())
         .arg("doctor")
         .assert()
         .success()
-        .stdout(predicate::str::contains("期望身份: [personal]"));
+        .stdout(predicate::str::contains("Expected Identity: [personal]"));
 }

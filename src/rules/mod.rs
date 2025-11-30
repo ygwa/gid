@@ -1,4 +1,3 @@
-
 use glob::Pattern;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -278,8 +277,6 @@ fn normalize_git_url(url: &str) -> String {
 
     url.to_string()
 }
-
-
 
 impl std::fmt::Display for Rule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

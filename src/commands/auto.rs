@@ -5,7 +5,7 @@ use crate::config::Config;
 use crate::git::GitConfigManager;
 use crate::rules::{MatchContext, RuleEngine};
 
-/// 根据规则自动切换身份
+/// Automatically switch identity based on rules
 pub fn execute() -> Result<()> {
     let config = Config::load()?;
     let git = GitConfigManager::new()?;
@@ -16,20 +16,20 @@ pub fn execute() -> Result<()> {
 
     let current_dir = std::env::current_dir()?;
 
-    // 1. 首先检查 .gid 项目配置
+    // 1. Check .gid project config first
     if let Ok(Some(project_config)) = crate::config::ProjectConfig::load_from_dir(&current_dir) {
         let project_identity = project_config.identity;
         if config.find_identity(&project_identity).is_some() {
             println!(
                 "{} Using project config (.gid): {}",
                 "→".blue(),
-                format!("[{}]", project_identity).cyan()
+                format!("[{project_identity}]").cyan()
             );
             return crate::commands::switch::execute(&project_identity, false);
         }
     }
 
-    // 2. 检查规则匹配
+    // 2. Check rule matching
     if config.rules.is_empty() {
         println!("{} No rules configured", "!".yellow());
         println!();
@@ -56,10 +56,10 @@ pub fn execute() -> Result<()> {
         return crate::commands::switch::execute(&matched_rule.identity, false);
     }
 
-    // 3. 没有匹配的规则
+    // 3. No matching rules
     println!("{} No matching rules", "!".yellow());
 
-    // 显示当前身份
+    // Show current identity
     let current_name = git.get_effective_user_name();
     let current_email = git.get_effective_user_email();
 

@@ -5,19 +5,19 @@ use std::path::{Path, PathBuf};
 
 use crate::rules::Rule;
 
-/// 项目级配置（.gid 文件）
+/// Project configuration (.gid file)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectConfig {
-    /// 默认身份 ID
+    /// Default identity ID
     pub identity: String,
 
-    /// 项目特定规则（可选）
+    /// Project specific rules (optional)
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub rules: Vec<Rule>,
 }
 
 impl ProjectConfig {
-    /// 从指定目录加载 .gid 配置
+    /// Load .gid config from specified directory
     pub fn load_from_dir(path: &Path) -> Result<Option<Self>> {
         let gid_path = path.join(".gid");
 
@@ -26,12 +26,13 @@ impl ProjectConfig {
         }
 
         let content = fs::read_to_string(&gid_path)
-            .with_context(|| format!("无法读取 .gid 文件: {}", gid_path.display()))?;
+            .with_context(|| format!("Could not read .gid file: {}", gid_path.display()))?;
 
         Self::parse(&content)
     }
 
-    /// 从当前目录向上查找 .gid 文件
+    /// Find .gid file in parents starting from current directory
+    #[allow(dead_code)]
     pub fn find_in_parents(start: &Path) -> Result<Option<(Self, PathBuf)>> {
         let mut current = start.to_path_buf();
 
@@ -40,7 +41,7 @@ impl ProjectConfig {
                 return Ok(Some((config, current.join(".gid"))));
             }
 
-            // 向上一级目录
+            // Go to parent directory
             if !current.pop() {
                 break;
             }
@@ -49,7 +50,7 @@ impl ProjectConfig {
         Ok(None)
     }
 
-    /// 解析 .gid 文件内容
+    /// Parse .gid file content
     fn parse(content: &str) -> Result<Option<Self>> {
         let trimmed = content.trim();
 
@@ -57,29 +58,29 @@ impl ProjectConfig {
             return Ok(None);
         }
 
-        // 尝试作为 TOML 解析
+        // Try parsing as TOML
         if trimmed.contains('=') || trimmed.contains('[') {
             match toml::from_str::<ProjectConfig>(trimmed) {
                 Ok(config) => return Ok(Some(config)),
                 Err(e) => {
-                    anyhow::bail!(".gid 文件格式错误: {}", e);
+                    anyhow::bail!(".gid file format error: {e}");
                 }
             }
         }
 
-        // 简单格式：单行身份 ID
+        // Simple format: single line identity ID
         let identity = trimmed.lines().next().unwrap_or("").trim().to_string();
 
         if identity.is_empty() {
             return Ok(None);
         }
 
-        // 验证身份 ID 格式
+        // Validate identity ID format
         if !identity
             .chars()
             .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
         {
-            anyhow::bail!(".gid 文件中的身份 ID 格式不正确: {}", identity);
+            anyhow::bail!("Invalid identity ID format in .gid file: {identity}");
         }
 
         Ok(Some(ProjectConfig {
@@ -88,19 +89,20 @@ impl ProjectConfig {
         }))
     }
 
-    /// 保存到指定目录
+    /// Save to specified directory
+    #[allow(dead_code)]
     pub fn save_to_dir(&self, path: &Path) -> Result<()> {
         let gid_path = path.join(".gid");
 
-        // 如果没有规则，使用简单格式
+        // If no rules, use simple format
         if self.rules.is_empty() {
             fs::write(&gid_path, format!("{}\n", self.identity))
-                .with_context(|| format!("无法写入 .gid 文件: {}", gid_path.display()))?;
+                .with_context(|| format!("Could not write .gid file: {}", gid_path.display()))?;
         } else {
-            // 使用 TOML 格式
-            let content = toml::to_string_pretty(self).context("无法序列化配置")?;
+            // Use TOML format
+            let content = toml::to_string_pretty(self).context("Could not serialize config")?;
             fs::write(&gid_path, content)
-                .with_context(|| format!("无法写入 .gid 文件: {}", gid_path.display()))?;
+                .with_context(|| format!("Could not write .gid file: {}", gid_path.display()))?;
         }
 
         Ok(())

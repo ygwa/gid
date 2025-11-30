@@ -5,7 +5,7 @@ use git2::{Repository, Signature};
 use crate::config::Config;
 use crate::git::GitConfigManager;
 
-/// 修复提交的身份信息
+/// Fix commit identity information
 pub fn execute(
     commit_ref: &str,
     identity_id: Option<String>,
@@ -19,20 +19,21 @@ pub fn execute(
         anyhow::bail!("Current directory is not a Git repository");
     }
 
-    // 检查是否有未提交的更改
+    // Check for uncommitted changes
     let repo = Repository::discover(".")?;
     if has_uncommitted_changes(&repo)? {
         anyhow::bail!(
             "{}",
-            "Uncommitted changes detected. Please commit or stash changes before fixing history.".red()
+            "Uncommitted changes detected. Please commit or stash changes before fixing history."
+                .red()
         );
     }
 
-    // 获取要使用的身份
+    // Get identity to use
     let identity_id = if let Some(id) = identity_id {
         id
     } else {
-        // 使用当前身份
+        // Use current identity
         let current_email = git
             .get_effective_user_email()
             .ok_or_else(|| anyhow::anyhow!("Could not get current email"))?;
@@ -49,7 +50,7 @@ pub fn execute(
         .find_identity(&identity_id)
         .ok_or_else(|| anyhow::anyhow!("Identity '{identity_id}' not found"))?;
 
-    // 处理批量修复
+    // Handle batch fix
     if let Some(range_str) = range {
         fix_commit_range(&repo, &range_str, identity, yes)?;
     } else {
@@ -59,14 +60,14 @@ pub fn execute(
     Ok(())
 }
 
-/// 修复单个提交
+/// Fix single commit
 fn fix_single_commit(
     repo: &Repository,
     commit_ref: &str,
     identity: &crate::config::Identity,
     yes: bool,
 ) -> Result<()> {
-    // 只支持修复 HEAD
+    // Only support fixing HEAD
     if commit_ref != "HEAD" {
         println!(
             "{} Fixing non-HEAD commits requires --range argument",
@@ -88,15 +89,14 @@ fn fix_single_commit(
     println!("Commit: {}", commit.id().to_string()[..7].dimmed());
     println!(
         "Message: {}",
-        commit
-            .message()
-            .unwrap_or("")
-            .lines()
-            .next()
-            .unwrap_or("")
+        commit.message().unwrap_or("").lines().next().unwrap_or("")
     );
     println!();
-    println!("Current Identity: {} <{}>", current_name, current_email.cyan());
+    println!(
+        "Current Identity: {} <{}>",
+        current_name,
+        current_email.cyan()
+    );
     println!(
         "New Identity:   {} <{}>",
         identity.name,
@@ -104,7 +104,7 @@ fn fix_single_commit(
     );
     println!();
 
-    // 确认
+    // Confirm
     if !yes {
         let confirm = dialoguer::Confirm::new()
             .with_prompt("Confirm fix?")
@@ -117,9 +117,7 @@ fn fix_single_commit(
         }
     }
 
-
-
-    // 修改提交
+    // Modify commit
     let new_author = Signature::now(&identity.name, &identity.email)?;
     let tree = commit.tree()?;
 
@@ -134,7 +132,7 @@ fn fix_single_commit(
             &[&parent],
         )?
     } else {
-        // 初始提交
+        // Initial commit
         repo.commit(
             None,
             &new_author,
@@ -145,7 +143,7 @@ fn fix_single_commit(
         )?
     };
 
-    // 更新 HEAD
+    // Update HEAD
     let head_ref = repo.head()?;
     if head_ref.is_branch() {
         let branch_name = head_ref.name().unwrap();
@@ -154,7 +152,7 @@ fn fix_single_commit(
         // Detached HEAD
         repo.set_head_detached(new_commit_oid)?;
     }
-    
+
     let new_commit = new_commit_oid;
 
     println!();
@@ -170,7 +168,7 @@ fn fix_single_commit(
     Ok(())
 }
 
-/// 批量修复提交范围
+/// Batch fix commit range
 fn fix_commit_range(
     repo: &Repository,
     range: &str,
@@ -187,7 +185,7 @@ fn fix_commit_range(
     );
     println!();
 
-    // 解析范围
+    // Parse range
     let revspec = repo.revparse(range)?;
 
     if revspec.mode().contains(git2::RevparseMode::SINGLE) {
@@ -197,9 +195,11 @@ fn fix_commit_range(
     let from = revspec
         .from()
         .ok_or_else(|| anyhow::anyhow!("Invalid range"))?;
-    let to = revspec.to().ok_or_else(|| anyhow::anyhow!("Invalid range"))?;
+    let to = revspec
+        .to()
+        .ok_or_else(|| anyhow::anyhow!("Invalid range"))?;
 
-    // 获取范围内的提交
+    // Get commits in range
     let mut revwalk = repo.revwalk()?;
     revwalk.push(to.id())?;
     revwalk.hide(from.id())?;
@@ -211,20 +211,22 @@ fn fix_commit_range(
         return Ok(());
     }
 
-    println!("Will fix {} commits", commit_count);
+    println!("Will fix {commit_count} commits");
     println!();
 
-    // 警告
+    // Warning
     println!(
         "{} {} This will modify commit history, all subsequent commit hashes will change",
         "⚠".yellow().bold(),
         "WARNING:".yellow().bold()
     );
     println!("  If pushed, you will need to use git push --force");
-    println!("  Recommend backing up current branch: git branch backup-$(git branch --show-current)");
+    println!(
+        "  Recommend backing up current branch: git branch backup-$(git branch --show-current)"
+    );
     println!();
 
-    // 确认
+    // Confirm
     if !yes {
         let confirm = dialoguer::Confirm::new()
             .with_prompt("Confirm continue?")
@@ -236,8 +238,6 @@ fn fix_commit_range(
             return Ok(());
         }
     }
-
-
 
     println!();
     println!("{} Batch fix not supported yet", "!".yellow());
@@ -257,7 +257,7 @@ fn fix_commit_range(
     Ok(())
 }
 
-/// 检查是否有未提交的更改
+/// Check for uncommitted changes
 fn has_uncommitted_changes(repo: &Repository) -> Result<bool> {
     let statuses = repo.statuses(None)?;
     Ok(!statuses.is_empty())

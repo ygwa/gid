@@ -12,7 +12,11 @@ pub fn execute() -> Result<()> {
     if !config_path.exists() {
         let config = Config::default();
         config.save()?;
-        println!("{} Configuration file created: {}", "→".blue(), config_path.display());
+        println!(
+            "{} Configuration file created: {}",
+            "→".blue(),
+            config_path.display()
+        );
     }
 
     // 获取编辑器
@@ -26,7 +30,11 @@ pub fn execute() -> Result<()> {
             }
         });
 
-    println!("{} Editing configuration file using {}...", "→".blue(), editor);
+    println!(
+        "{} Editing configuration file using {}...",
+        "→".blue(),
+        editor
+    );
     println!("  {}", config_path.display().to_string().dimmed());
 
     // 打开编辑器

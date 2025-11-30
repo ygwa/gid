@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use crate::audit::Auditor;
 use crate::config::Config;
 
-/// 审计提交历史
+/// Audit commit history
 pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
     let config = Config::load()?;
     let auditor = Auditor::new(config);
@@ -16,7 +16,7 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
     println!("  Target: {}", target_path.display().to_string().cyan());
     println!();
 
-    // 检查是单个仓库还是目录
+    // Check if single repo or directory
     let results = if target_path.join(".git").exists() {
         vec![auditor.audit_repo(&target_path)?]
     } else {
@@ -28,14 +28,14 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
         return Ok(());
     }
 
-    // 显示结果
+    // Show results
     let mut total_issues = 0;
     for result in &results {
         result.print_report();
         total_issues += result.issues.len();
     }
 
-    // 汇总
+    // Summary
     println!();
     println!("{}", "═".repeat(50));
     println!(
@@ -50,7 +50,10 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
 
     if total_issues > 0 && fix {
         println!();
-        println!("{} Automatic fix does not support commit history modification yet", "!".yellow());
+        println!(
+            "{} Automatic fix does not support commit history modification yet",
+            "!".yellow()
+        );
         println!("  Modifying commit history requires git rebase or git filter-branch");
         println!("  Manual handling or specialized tools like git-filter-repo are recommended");
     }

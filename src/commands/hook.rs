@@ -149,11 +149,7 @@ fn install_global_hook() -> Result<()> {
     println!("{} Global pre-commit hook installed", "✓".green());
     println!("  {}", hook_path.display().to_string().dimmed());
     println!();
-    println!(
-        "Set {} = {}",
-        "core.hooksPath".cyan(),
-        hooks_dir.display()
-    );
+    println!("Set {} = {}", "core.hooksPath".cyan(), hooks_dir.display());
 
     Ok(())
 }
@@ -245,7 +241,11 @@ fn show_status() -> Result<()> {
                 let is_gid = content.contains("gid");
 
                 if is_gid {
-                    println!("  {} Local hook: {}", "✓".green(), "Installed (gid)".green());
+                    println!(
+                        "  {} Local hook: {}",
+                        "✓".green(),
+                        "Installed (gid)".green()
+                    );
                 } else {
                     println!(
                         "  {} Local hook: {}",
@@ -255,7 +255,11 @@ fn show_status() -> Result<()> {
                 }
                 println!("    {}", hook_path.display().to_string().dimmed());
             } else {
-                println!("  {} Local hook: {}", "○".dimmed(), "Not installed".dimmed());
+                println!(
+                    "  {} Local hook: {}",
+                    "○".dimmed(),
+                    "Not installed".dimmed()
+                );
             }
         }
     } else {
@@ -289,7 +293,11 @@ fn show_status() -> Result<()> {
             let is_gid = content.contains("gid");
 
             if is_gid {
-                println!("  {} Global hook: {}", "✓".green(), "Installed (gid)".green());
+                println!(
+                    "  {} Global hook: {}",
+                    "✓".green(),
+                    "Installed (gid)".green()
+                );
             } else {
                 println!(
                     "  {} Global hook: {}",
@@ -299,11 +307,19 @@ fn show_status() -> Result<()> {
             }
             println!("    {}", hook_path.display().to_string().dimmed());
         } else {
-            println!("  {} Global hook: {}", "○".dimmed(), "Not installed".dimmed());
+            println!(
+                "  {} Global hook: {}",
+                "○".dimmed(),
+                "Not installed".dimmed()
+            );
         }
         println!("    core.hooksPath = {}", hooks_path.dimmed());
     } else {
-        println!("  {} Global hook: {}", "○".dimmed(), "Not configured".dimmed());
+        println!(
+            "  {} Global hook: {}",
+            "○".dimmed(),
+            "Not configured".dimmed()
+        );
     }
 
     Ok(())

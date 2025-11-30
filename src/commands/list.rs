@@ -46,7 +46,10 @@ pub fn execute() -> Result<()> {
         println!();
     }
 
-    println!("Total {} identities", config.identities.len().to_string().bold());
+    println!(
+        "Total {} identities",
+        config.identities.len().to_string().bold()
+    );
 
     Ok(())
 }

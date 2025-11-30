@@ -48,7 +48,10 @@ pub fn execute(identity_id: &str, global: bool) -> Result<()> {
                     "  {} ssh-agent not running, skipping key addition",
                     "!".yellow()
                 );
-                println!("    Tip: Run 'ssh-add {}' after starting ssh-agent", ssh_key.display());
+                println!(
+                    "    Tip: Run 'ssh-add {}' after starting ssh-agent",
+                    ssh_key.display()
+                );
             }
 
             // 为常见的 Git 托管服务配置 SSH

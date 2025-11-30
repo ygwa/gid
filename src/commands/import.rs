@@ -13,10 +13,11 @@ pub fn execute(file: &Path) -> Result<()> {
     }
 
     // 读取并解析导入文件
-    let content =
-        fs::read_to_string(file).with_context(|| format!("Could not read file: {}", file.display()))?;
+    let content = fs::read_to_string(file)
+        .with_context(|| format!("Could not read file: {}", file.display()))?;
 
-    let import_config: Config = toml::from_str(&content).with_context(|| "Configuration file format error")?;
+    let import_config: Config =
+        toml::from_str(&content).with_context(|| "Configuration file format error")?;
 
     if import_config.identities.is_empty() && import_config.rules.is_empty() {
         println!("{} No valid configuration found in file", "!".yellow());
