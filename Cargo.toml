@@ -1,6 +1,6 @@
 [package]
 name = "ggid"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["gid contributors"]
 description = "Git Identity Manager - A complete solution for managing multiple Git identities"

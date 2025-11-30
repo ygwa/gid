@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>gid - Git Identity Manager</title>
-    <meta name="description" content="A complete solution for managing multiple Git identities. Switch seamlessly between work and personal profiles.">
+    <meta name="description"
+        content="A complete solution for managing multiple Git identities. Switch seamlessly between work and personal profiles.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary: #3b82f6;
@@ -212,19 +215,38 @@
             border-radius: 50%;
         }
 
-        .dot-red { background: #ff5f56; }
-        .dot-yellow { background: #ffbd2e; }
-        .dot-green { background: #27c93f; }
+        .dot-red {
+            background: #ff5f56;
+        }
+
+        .dot-yellow {
+            background: #ffbd2e;
+        }
+
+        .dot-green {
+            background: #27c93f;
+        }
 
         .terminal-body {
             padding: 1.5rem;
             color: #d4d4d4;
         }
 
-        .cmd { color: #9cdcfe; }
-        .arg { color: #ce9178; }
-        .success { color: #4ec9b0; }
-        .comment { color: #6a9955; }
+        .cmd {
+            color: #9cdcfe;
+        }
+
+        .arg {
+            color: #ce9178;
+        }
+
+        .success {
+            color: #4ec9b0;
+        }
+
+        .comment {
+            color: #6a9955;
+        }
 
         /* Features Grid */
         .features {
@@ -326,12 +348,21 @@
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 2.5rem; }
-            .hero { padding-top: 8rem; }
-            nav { display: none; }
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero {
+                padding-top: 8rem;
+            }
+
+            nav {
+                display: none;
+            }
         }
     </style>
 </head>
+
 <body>
     <header>
         <div class="logo">gid</div>
@@ -342,8 +373,9 @@
                 <li><a href="https://github.com/ygwa/gid" target="_blank">GitHub</a></li>
             </ul>
         </nav>
-        <a href="https://crates.io/crates/ggid" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-            v0.1.0
+        <a href="https://crates.io/crates/ggid" class="btn btn-secondary"
+            style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            v0.1.1
         </a>
     </header>
 
@@ -351,7 +383,7 @@
         <div class="badge">Now Available on Crates.io</div>
         <h1>Manage Git Identities<br><span>Like a Pro</span></h1>
         <p class="subtitle">
-            Seamlessly switch between work and personal profiles. 
+            Seamlessly switch between work and personal profiles.
             Automate your workflow with smart rules and hooks.
         </p>
         <div class="cta-group">
@@ -368,7 +400,8 @@
             <div class="terminal-body">
                 <div><span class="comment"># Switch to work identity</span></div>
                 <div><span class="success">➜</span> <span class="cmd">gid</span> switch work</div>
-                <div style="margin-top: 0.5rem; color: #4ec9b0;">✓ Switched to project identity: [work] John Doe &lt;john@company.com&gt;</div>
+                <div style="margin-top: 0.5rem; color: #4ec9b0;">✓ Switched to project identity: [work] John Doe
+                    &lt;john@company.com&gt;</div>
                 <div style="color: #6a9955; margin-left: 1rem;">🔑 SSH key configured</div>
                 <div style="color: #6a9955; margin-left: 1rem;">🔏 GPG signing enabled</div>
                 <br>
@@ -385,7 +418,8 @@
             <div class="card">
                 <div class="icon">🔄</div>
                 <h3>One-click Switch</h3>
-                <p>Instantly switch between multiple identities with a single command. No more manual config editing.</p>
+                <p>Instantly switch between multiple identities with a single command. No more manual config editing.
+                </p>
             </div>
             <div class="card">
                 <div class="icon">🧠</div>
@@ -422,12 +456,15 @@
                 <span class="install-cmd">cargo install ggid</span>
                 <button class="copy-btn" onclick="navigator.clipboard.writeText('cargo install ggid')">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                        </path>
                     </svg>
                 </button>
             </div>
             <p style="margin-top: 1rem; color: var(--text-muted);">
-                Or check <a href="https://github.com/ygwa/gid#installation" style="color: var(--primary);">documentation</a> for other methods.
+                Or check <a href="https://github.com/ygwa/gid#installation"
+                    style="color: var(--primary);">documentation</a> for other methods.
             </p>
         </div>
     </section>
@@ -439,4 +476,5 @@
         </p>
     </footer>
 </body>
+
 </html>
