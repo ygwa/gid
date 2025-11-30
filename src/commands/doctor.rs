@@ -3,14 +3,14 @@ use colored::Colorize;
 
 use crate::config::Config;
 use crate::git::GitConfigManager;
-use crate::rules::{load_project_config, MatchContext, RuleEngine};
+use crate::rules::{MatchContext, RuleEngine};
 
 /// 检查当前目录的身份配置
 pub fn execute(fix: bool) -> Result<()> {
     let config = Config::load()?;
     let git = GitConfigManager::new()?;
 
-    println!("{}", "检查 Git 身份配置...".bold());
+    println!("{}", "Checking Git identity configuration...".bold());
     println!();
 
     let mut issues = Vec::new();
@@ -18,7 +18,7 @@ pub fn execute(fix: bool) -> Result<()> {
 
     // 1. 检查是否在 Git 仓库中
     if !git.is_in_repo() {
-        println!("{} 当前目录不是 Git 仓库", "!".yellow());
+        println!("{} Current directory is not a Git repository", "!".yellow());
         return Ok(());
     }
 
@@ -28,7 +28,7 @@ pub fn execute(fix: bool) -> Result<()> {
     let current_name = git.get_effective_user_name();
     let current_email = git.get_effective_user_email();
 
-    println!("当前身份:");
+    println!("Current Identity:");
     if let (Some(ref name), Some(ref email)) = (&current_name, &current_email) {
         println!("  {} <{}>", name, email.cyan());
 
@@ -41,22 +41,23 @@ pub fn execute(fix: bool) -> Result<()> {
         if let Some(identity) = known {
             println!(
                 "  {} {}",
-                "身份:".green(),
+                "Identity:".green(),
                 format!("[{}]", identity.id).green()
             );
         } else {
-            issues.push("当前身份不在配置列表中".to_string());
+            issues.push("Current identity is not in the configuration list".to_string());
         }
     } else {
-        issues.push("没有配置 Git 用户信息".to_string());
+        issues.push("Git user information not configured".to_string());
     }
 
     println!();
 
     // 3. 检查 .gid 项目配置
-    if let Ok(Some(project_identity)) = load_project_config(&current_dir) {
-        println!("项目配置 (.gid):");
-        println!("  期望身份: {}", format!("[{project_identity}]").cyan());
+    if let Ok(Some(project_config)) = crate::config::ProjectConfig::load_from_dir(&current_dir) {
+        let project_identity = project_config.identity;
+        println!("Project Config (.gid):");
+        println!("  Expected Identity: {}", format!("[{}]", project_identity).cyan());
 
         if let Some(identity) = config.find_identity(&project_identity) {
             // 检查是否匹配
@@ -64,14 +65,15 @@ pub fn execute(fix: bool) -> Result<()> {
                 || current_email.as_ref() != Some(&identity.email)
             {
                 issues.push(format!(
-                    "当前身份与项目配置不匹配 (期望: [{project_identity}])"
+                    "Current identity does not match project config (expected: [{}])",
+                    project_identity
                 ));
-                suggestions.push(format!("gid switch {project_identity}"));
+                suggestions.push(format!("gid switch {}", project_identity));
             } else {
-                println!("  {} 身份匹配", "✓".green());
+                println!("  {} Identity matches", "✓".green());
             }
         } else {
-            issues.push(format!("项目配置的身份 '{project_identity}' 不存在"));
+            issues.push(format!("Project configured identity '{}' does not exist", project_identity));
         }
         println!();
     }
@@ -90,7 +92,7 @@ pub fn execute(fix: bool) -> Result<()> {
 
         if let Some(matched_rule) = engine.match_context(&context) {
             println!();
-            println!("匹配的规则:");
+            println!("Matched Rules:");
             println!(
                 "  {} -> {}",
                 matched_rule.pattern().cyan(),
@@ -102,12 +104,12 @@ pub fn execute(fix: bool) -> Result<()> {
                     || current_email.as_ref() != Some(&identity.email)
                 {
                     issues.push(format!(
-                        "当前身份与规则不匹配 (期望: [{}])",
+                        "Current identity does not match rule (expected: [{}])",
                         matched_rule.identity
                     ));
                     suggestions.push(format!("gid switch {}", matched_rule.identity));
                 } else {
-                    println!("  {} 身份匹配", "✓".green());
+                    println!("  {} Identity matches", "✓".green());
                 }
             }
         }
@@ -120,7 +122,7 @@ pub fn execute(fix: bool) -> Result<()> {
             if let Some(ref ssh_key) = identity.ssh_key {
                 let ssh = crate::ssh::SshManager::new()?;
                 if !ssh.key_exists(ssh_key) {
-                    issues.push(format!("SSH 密钥文件不存在: {}", ssh_key.display()));
+                    issues.push(format!("SSH key file does not exist: {}", ssh_key.display()));
                 }
             }
         }
@@ -130,16 +132,16 @@ pub fn execute(fix: bool) -> Result<()> {
     println!();
 
     if issues.is_empty() {
-        println!("{} 没有发现问题", "✓".green().bold());
+        println!("{} No issues found", "✓".green().bold());
     } else {
-        println!("{} 发现 {} 个问题:", "⚠".yellow().bold(), issues.len());
+        println!("{} Found {} issues:", "⚠".yellow().bold(), issues.len());
         for issue in &issues {
             println!("  {} {}", "•".red(), issue);
         }
 
         if !suggestions.is_empty() && fix {
             println!();
-            println!("正在修复...");
+            println!("Fixing...");
 
             // 执行第一个建议
             if let Some(suggestion) = suggestions.first() {
@@ -150,12 +152,12 @@ pub fn execute(fix: bool) -> Result<()> {
             }
         } else if !suggestions.is_empty() {
             println!();
-            println!("建议操作:");
+            println!("Suggested actions:");
             for suggestion in &suggestions {
                 println!("  {} {}", "→".blue(), suggestion.cyan());
             }
             println!();
-            println!("使用 {} 自动修复", "gid doctor --fix".cyan());
+            println!("Use {} to fix automatically", "gid doctor --fix".cyan());
         }
     }
 

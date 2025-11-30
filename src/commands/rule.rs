@@ -33,7 +33,7 @@ fn add_rule(
 
     // 验证身份存在
     if config.find_identity(&identity).is_none() {
-        anyhow::bail!("身份 '{identity}' 不存在");
+        anyhow::bail!("Identity '{identity}' does not exist");
     }
 
     // 创建规则
@@ -47,12 +47,12 @@ fn add_rule(
     config.save()?;
 
     let type_name = match rule_type {
-        CliRuleType::Path => "路径",
+        CliRuleType::Path => "Path",
         CliRuleType::Remote => "Remote URL",
     };
 
     println!(
-        "{} 已添加{}规则: {} -> {}",
+        "{} Added {} rule: {} -> {}",
         "✓".green(),
         type_name,
         pattern.cyan(),
@@ -67,28 +67,28 @@ fn list_rules() -> Result<()> {
     let config = Config::load()?;
 
     if config.rules.is_empty() {
-        println!("{} 没有配置任何规则", "!".yellow());
+        println!("{} No rules configured", "!".yellow());
         println!();
-        println!("使用 {} 添加规则", "gid rule add".cyan());
+        println!("Use {} to add rules", "gid rule add".cyan());
         println!();
-        println!("示例:");
+        println!("Example:");
         println!(
-            "  {} 添加路径规则",
+            "  {} Add path rule",
             "gid rule add -t path -p '~/work/**' -i work".dimmed()
         );
         println!(
-            "  {} 添加 remote 规则",
+            "  {} Add remote rule",
             "gid rule add -t remote -p 'github.com/company/*' -i work".dimmed()
         );
         return Ok(());
     }
 
-    println!("{}", "已配置的规则:".bold());
+    println!("{}", "Configured Rules:".bold());
     println!();
 
     for (i, rule) in config.rules.iter().enumerate() {
         let type_badge = match &rule.rule_type {
-            RuleType::Path { .. } => "[路径]".cyan(),
+            RuleType::Path { .. } => "[Path]".cyan(),
             RuleType::Remote { .. } => "[Remote]".magenta(),
         };
 
@@ -111,11 +111,11 @@ fn list_rules() -> Result<()> {
             println!("       {}", desc.dimmed());
         }
 
-        println!("       优先级: {}", rule.priority.to_string().dimmed());
+        println!("       Priority: {}", rule.priority.to_string().dimmed());
     }
 
     println!();
-    println!("共 {} 条规则", config.rules.len());
+    println!("Total {} rules", config.rules.len());
 
     Ok(())
 }
@@ -126,7 +126,7 @@ fn remove_rule(index: usize) -> Result<()> {
 
     if index >= config.rules.len() {
         anyhow::bail!(
-            "规则索引 {} 超出范围 (共 {} 条规则)",
+            "Rule index {} out of range (total {} rules)",
             index,
             config.rules.len()
         );
@@ -134,25 +134,25 @@ fn remove_rule(index: usize) -> Result<()> {
 
     let rule = &config.rules[index];
     println!(
-        "将要删除规则: {} -> {}",
+        "About to remove rule: {} -> {}",
         rule.pattern().yellow(),
         rule.identity
     );
 
     let confirm = dialoguer::Confirm::new()
-        .with_prompt("确定要删除吗?")
+        .with_prompt("Are you sure you want to remove?")
         .default(false)
         .interact()?;
 
     if !confirm {
-        println!("操作已取消");
+        println!("Operation cancelled");
         return Ok(());
     }
 
     config.remove_rule(index)?;
     config.save()?;
 
-    println!("{} 规则已删除", "✓".green());
+    println!("{} Rule removed", "✓".green());
 
     Ok(())
 }
@@ -162,7 +162,7 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
     let config = Config::load()?;
 
     if config.rules.is_empty() {
-        println!("{} 没有配置任何规则", "!".yellow());
+        println!("{} No rules configured", "!".yellow());
         return Ok(());
     }
 
@@ -185,9 +185,9 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
         context = context.with_remote(remote.clone());
     }
 
-    println!("{}", "测试规则匹配:".bold());
+    println!("{}", "Test Rule Matching:".bold());
     println!();
-    println!("  路径: {}", test_path.display().to_string().cyan());
+    println!("  Path: {}", test_path.display().to_string().cyan());
     if let Some(ref remote) = test_remote {
         println!("  Remote: {}", remote.cyan());
     }
@@ -199,9 +199,9 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
     let matched_rules = engine.match_all(&context);
 
     if matched_rules.is_empty() {
-        println!("{} 没有匹配的规则", "!".yellow());
+        println!("{} No matching rules", "!".yellow());
     } else {
-        println!("匹配的规则:");
+        println!("Matched Rules:");
         for (i, rule) in matched_rules.iter().enumerate() {
             let marker = if i == 0 { "→".green() } else { " ".into() };
             println!(
@@ -218,7 +218,7 @@ fn test_rule(path: Option<PathBuf>, remote: Option<String>) -> Result<()> {
         if let Some(first) = matched_rules.first() {
             if let Some(identity) = config.find_identity(&first.identity) {
                 println!(
-                    "{} 将使用身份: {} {} <{}>",
+                    "{} Will use identity: {} {} <{}>",
                     "✓".green(),
                     format!("[{}]", identity.id).green().bold(),
                     identity.name,

@@ -203,8 +203,8 @@ impl Auditor {
     /// 获取期望的身份
     fn get_expected_identity(&self, path: &Path, git: &GitConfigManager) -> Option<String> {
         // 检查 .gid 文件
-        if let Ok(Some(identity)) = crate::rules::load_project_config(path) {
-            return Some(identity);
+        if let Ok(Some(project_config)) = crate::config::ProjectConfig::load_from_dir(path) {
+            return Some(project_config.identity);
         }
 
         // 检查规则匹配

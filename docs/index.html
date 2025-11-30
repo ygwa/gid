@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gid - Git Identity Manager</title>
+    <meta name="description" content="A complete solution for managing multiple Git identities. Switch seamlessly between work and personal profiles.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --dark: #0f172a;
+            --dark-lighter: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav a {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .github-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 2rem 6rem;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 9999px;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        h1 span {
+            background: linear-gradient(135deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        .cta-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--dark-lighter);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Terminal Demo */
+        .terminal-demo {
+            margin-top: 4rem;
+            background: #1e1e1e;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            text-align: left;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .terminal-header {
+            background: #2d2d2d;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 1.5rem;
+            color: #d4d4d4;
+        }
+
+        .cmd { color: #9cdcfe; }
+        .arg { color: #ce9178; }
+        .success { color: #4ec9b0; }
+        .comment { color: #6a9955; }
+
+        /* Features Grid */
+        .features {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--dark-lighter);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Installation */
+        .installation {
+            padding: 6rem 2rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .install-box {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--dark);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .install-cmd {
+            font-family: monospace;
+            color: var(--secondary);
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .hero { padding-top: 8rem; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">gid</div>
+        <nav>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="https://github.com/ygwa/gid" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+        <a href="https://crates.io/crates/ggid" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            v0.1.0
+        </a>
+    </header>
+
+    <section class="hero">
+        <div class="badge">Now Available on Crates.io</div>
+        <h1>Manage Git Identities<br><span>Like a Pro</span></h1>
+        <p class="subtitle">
+            Seamlessly switch between work and personal profiles. 
+            Automate your workflow with smart rules and hooks.
+        </p>
+        <div class="cta-group">
+            <a href="#installation" class="btn btn-primary">Get Started</a>
+            <a href="https://github.com/ygwa/gid" class="btn btn-secondary">View on GitHub</a>
+        </div>
+
+        <div class="terminal-demo">
+            <div class="terminal-header">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="terminal-body">
+                <div><span class="comment"># Switch to work identity</span></div>
+                <div><span class="success">➜</span> <span class="cmd">gid</span> switch work</div>
+                <div style="margin-top: 0.5rem; color: #4ec9b0;">✓ Switched to project identity: [work] John Doe &lt;john@company.com&gt;</div>
+                <div style="color: #6a9955; margin-left: 1rem;">🔑 SSH key configured</div>
+                <div style="color: #6a9955; margin-left: 1rem;">🔏 GPG signing enabled</div>
+                <br>
+                <div><span class="comment"># Auto-detect based on path</span></div>
+                <div><span class="success">➜</span> <span class="cmd">gid</span> auto</div>
+                <div style="margin-top: 0.5rem; color: #4ec9b0;">→ Matched rule: ~/work/** -> [work]</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <h2 class="section-title">Why use gid?</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="icon">🔄</div>
+                <h3>One-click Switch</h3>
+                <p>Instantly switch between multiple identities with a single command. No more manual config editing.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🧠</div>
+                <h3>Smart Rules</h3>
+                <p>Define rules based on directory paths or remote URLs to automatically select the right identity.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🔑</div>
+                <h3>SSH & GPG</h3>
+                <p>Automatically manage SSH keys and GPG signing configurations for each identity.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🛡️</div>
+                <h3>Audit & Fix</h3>
+                <p>Scan your commit history for identity mistakes and fix them before pushing.</p>
+            </div>
+            <div class="card">
+                <div class="icon">⚡</div>
+                <h3>Blazing Fast</h3>
+                <p>Written in Rust for maximum performance and reliability. Zero runtime dependencies.</p>
+            </div>
+            <div class="card">
+                <div class="icon">🌍</div>
+                <h3>Cross Platform</h3>
+                <p>Works seamlessly on macOS, Linux, and Windows. Consistent experience everywhere.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="installation" class="installation">
+        <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+            <h2 class="section-title">Install in seconds</h2>
+            <div class="install-box">
+                <span class="install-cmd">cargo install ggid</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('cargo install ggid')">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
+            </div>
+            <p style="margin-top: 1rem; color: var(--text-muted);">
+                Or check <a href="https://github.com/ygwa/gid#installation" style="color: var(--primary);">documentation</a> for other methods.
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 gid. Open source under MIT License.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.875rem;">
+            Created by <a href="https://github.com/ygwa" style="color: var(--text);">ygwa</a>
+        </p>
+    </footer>
+</body>
+</html>

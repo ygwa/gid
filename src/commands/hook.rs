@@ -12,20 +12,20 @@ use crate::git::GitConfigManager;
 /// Git hook 脚本内容
 const PRE_COMMIT_HOOK: &str = r#"#!/bin/sh
 # gid pre-commit hook
-# 检查 Git 身份是否符合规则
+# Check if Git identity matches rules
 
-# 允许跳过检查
+# Allow skipping check
 if [ "$GID_SKIP" = "1" ]; then
     exit 0
 fi
 
-# 检查 gid 是否可用
+# Check if gid is available
 if ! command -v gid &> /dev/null; then
     echo "Warning: gid not found, skipping identity check"
     exit 0
 fi
 
-# 运行检查
+# Run check
 output=$(gid doctor 2>&1)
 exit_code=$?
 
@@ -70,15 +70,15 @@ fn install_local_hook() -> Result<()> {
     let git = GitConfigManager::new()?;
 
     if !git.is_in_repo() {
-        anyhow::bail!("当前目录不是 Git 仓库");
+        anyhow::bail!("Current directory is not a Git repository");
     }
 
     let hooks_dir = git
         .repo_path()
-        .ok_or_else(|| anyhow::anyhow!("无法获取仓库路径"))?
+        .ok_or_else(|| anyhow::anyhow!("Could not get repository path"))?
         .join("hooks");
 
-    fs::create_dir_all(&hooks_dir).context("无法创建 hooks 目录")?;
+    fs::create_dir_all(&hooks_dir).context("Could not create hooks directory")?;
 
     let hook_path = hooks_dir.join("pre-commit");
 
@@ -86,29 +86,29 @@ fn install_local_hook() -> Result<()> {
     if hook_path.exists() {
         let content = fs::read_to_string(&hook_path)?;
         if !content.contains("gid") {
-            println!("{} 已存在 pre-commit hook", "!".yellow());
+            println!("{} pre-commit hook already exists", "!".yellow());
             println!("  {}", hook_path.display().to_string().dimmed());
 
             let confirm = dialoguer::Confirm::new()
-                .with_prompt("是否覆盖?")
+                .with_prompt("Overwrite?")
                 .default(false)
                 .interact()?;
 
             if !confirm {
-                println!("操作已取消");
+                println!("Operation cancelled");
                 return Ok(());
             }
         }
     }
 
     // 写入 hook
-    fs::write(&hook_path, PRE_COMMIT_HOOK).context("无法写入 hook 文件")?;
+    fs::write(&hook_path, PRE_COMMIT_HOOK).context("Could not write hook file")?;
 
     // 设置可执行权限 (仅 Unix)
     #[cfg(unix)]
     fs::set_permissions(&hook_path, fs::Permissions::from_mode(0o755))?;
 
-    println!("{} 已安装 pre-commit hook", "✓".green());
+    println!("{} pre-commit hook installed", "✓".green());
     println!("  {}", hook_path.display().to_string().dimmed());
 
     Ok(())
@@ -116,16 +116,16 @@ fn install_local_hook() -> Result<()> {
 
 /// 安装全局 hook
 fn install_global_hook() -> Result<()> {
-    let home = home::home_dir().ok_or_else(|| anyhow::anyhow!("无法获取主目录"))?;
+    let home = home::home_dir().ok_or_else(|| anyhow::anyhow!("Could not get home directory"))?;
 
     let hooks_dir = home.join(".config").join("git").join("hooks");
 
-    fs::create_dir_all(&hooks_dir).context("无法创建全局 hooks 目录")?;
+    fs::create_dir_all(&hooks_dir).context("Could not create global hooks directory")?;
 
     let hook_path = hooks_dir.join("pre-commit");
 
     // 写入 hook
-    fs::write(&hook_path, PRE_COMMIT_HOOK).context("无法写入 hook 文件")?;
+    fs::write(&hook_path, PRE_COMMIT_HOOK).context("Could not write hook file")?;
 
     // 设置可执行权限 (仅 Unix)
     #[cfg(unix)]
@@ -140,17 +140,17 @@ fn install_global_hook() -> Result<()> {
             hooks_dir.to_str().unwrap(),
         ])
         .output()
-        .context("无法设置 core.hooksPath")?;
+        .context("Could not set core.hooksPath")?;
 
     if !output.status.success() {
-        anyhow::bail!("设置 core.hooksPath 失败");
+        anyhow::bail!("Failed to set core.hooksPath");
     }
 
-    println!("{} 已安装全局 pre-commit hook", "✓".green());
+    println!("{} Global pre-commit hook installed", "✓".green());
     println!("  {}", hook_path.display().to_string().dimmed());
     println!();
     println!(
-        "已设置 {} = {}",
+        "Set {} = {}",
         "core.hooksPath".cyan(),
         hooks_dir.display()
     );
@@ -172,37 +172,37 @@ fn uninstall_local_hook() -> Result<()> {
     let git = GitConfigManager::new()?;
 
     if !git.is_in_repo() {
-        anyhow::bail!("当前目录不是 Git 仓库");
+        anyhow::bail!("Current directory is not a Git repository");
     }
 
     let hook_path = git
         .repo_path()
-        .ok_or_else(|| anyhow::anyhow!("无法获取仓库路径"))?
+        .ok_or_else(|| anyhow::anyhow!("Could not get repository path"))?
         .join("hooks")
         .join("pre-commit");
 
     if !hook_path.exists() {
-        println!("{} hook 不存在", "!".yellow());
+        println!("{} hook does not exist", "!".yellow());
         return Ok(());
     }
 
     // 检查是否是 gid 的 hook
     let content = fs::read_to_string(&hook_path)?;
     if !content.contains("gid") {
-        println!("{} 这不是 gid 的 hook，跳过删除", "!".yellow());
+        println!("{} This is not a gid hook, skipping removal", "!".yellow());
         return Ok(());
     }
 
-    fs::remove_file(&hook_path).context("无法删除 hook 文件")?;
+    fs::remove_file(&hook_path).context("Could not remove hook file")?;
 
-    println!("{} 已卸载 pre-commit hook", "✓".green());
+    println!("{} pre-commit hook uninstalled", "✓".green());
 
     Ok(())
 }
 
 /// 卸载全局 hook
 fn uninstall_global_hook() -> Result<()> {
-    let home = home::home_dir().ok_or_else(|| anyhow::anyhow!("无法获取主目录"))?;
+    let home = home::home_dir().ok_or_else(|| anyhow::anyhow!("Could not get home directory"))?;
 
     let hook_path = home
         .join(".config")
@@ -214,7 +214,7 @@ fn uninstall_global_hook() -> Result<()> {
         let content = fs::read_to_string(&hook_path)?;
         if content.contains("gid") {
             fs::remove_file(&hook_path)?;
-            println!("{} 已删除全局 hook", "✓".green());
+            println!("{} Global hook removed", "✓".green());
         }
     }
 
@@ -223,14 +223,14 @@ fn uninstall_global_hook() -> Result<()> {
         .args(["config", "--global", "--unset", "core.hooksPath"])
         .output();
 
-    println!("{} 已移除 core.hooksPath 配置", "✓".green());
+    println!("{} core.hooksPath configuration removed", "✓".green());
 
     Ok(())
 }
 
 /// 显示 hook 状态
 fn show_status() -> Result<()> {
-    println!("{}", "Git Hook 状态:".bold());
+    println!("{}", "Git Hook Status:".bold());
     println!();
 
     // 检查本地 hook
@@ -245,24 +245,24 @@ fn show_status() -> Result<()> {
                 let is_gid = content.contains("gid");
 
                 if is_gid {
-                    println!("  {} 本地 hook: {}", "✓".green(), "已安装 (gid)".green());
+                    println!("  {} Local hook: {}", "✓".green(), "Installed (gid)".green());
                 } else {
                     println!(
-                        "  {} 本地 hook: {}",
+                        "  {} Local hook: {}",
                         "!".yellow(),
-                        "已存在 (非 gid)".yellow()
+                        "Exists (non-gid)".yellow()
                     );
                 }
                 println!("    {}", hook_path.display().to_string().dimmed());
             } else {
-                println!("  {} 本地 hook: {}", "○".dimmed(), "未安装".dimmed());
+                println!("  {} Local hook: {}", "○".dimmed(), "Not installed".dimmed());
             }
         }
     } else {
         println!(
-            "  {} 本地 hook: {}",
+            "  {} Local hook: {}",
             "○".dimmed(),
-            "不在 Git 仓库中".dimmed()
+            "Not in a Git repository".dimmed()
         );
     }
 
@@ -289,21 +289,21 @@ fn show_status() -> Result<()> {
             let is_gid = content.contains("gid");
 
             if is_gid {
-                println!("  {} 全局 hook: {}", "✓".green(), "已安装 (gid)".green());
+                println!("  {} Global hook: {}", "✓".green(), "Installed (gid)".green());
             } else {
                 println!(
-                    "  {} 全局 hook: {}",
+                    "  {} Global hook: {}",
                     "!".yellow(),
-                    "已存在 (非 gid)".yellow()
+                    "Exists (non-gid)".yellow()
                 );
             }
             println!("    {}", hook_path.display().to_string().dimmed());
         } else {
-            println!("  {} 全局 hook: {}", "○".dimmed(), "未安装".dimmed());
+            println!("  {} Global hook: {}", "○".dimmed(), "Not installed".dimmed());
         }
         println!("    core.hooksPath = {}", hooks_path.dimmed());
     } else {
-        println!("  {} 全局 hook: {}", "○".dimmed(), "未配置".dimmed());
+        println!("  {} Global hook: {}", "○".dimmed(), "Not configured".dimmed());
     }
 
     Ok(())

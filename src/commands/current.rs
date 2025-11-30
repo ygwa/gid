@@ -9,7 +9,7 @@ pub fn execute() -> Result<()> {
     let config = Config::load()?;
     let git = GitConfigManager::new()?;
 
-    println!("{}", "当前 Git 身份:".bold());
+    println!("{}", "Current Git Identity:".bold());
     println!();
 
     // 项目级配置
@@ -19,12 +19,12 @@ pub fn execute() -> Result<()> {
     if local_name.is_some() || local_email.is_some() {
         println!(
             "  {} {} <{}>",
-            "项目级:".green(),
-            local_name.as_deref().unwrap_or("未设置"),
-            local_email.as_deref().unwrap_or("未设置").cyan()
+            "Project:".green(),
+            local_name.as_deref().unwrap_or("Not set"),
+            local_email.as_deref().unwrap_or("Not set").cyan()
         );
     } else {
-        println!("  {} {}", "项目级:".dimmed(), "未设置".dimmed());
+        println!("  {} {}", "Project:".dimmed(), "Not set".dimmed());
     }
 
     // 全局配置
@@ -34,12 +34,12 @@ pub fn execute() -> Result<()> {
     if global_name.is_some() || global_email.is_some() {
         println!(
             "  {} {} <{}>",
-            "全局级:".green(),
-            global_name.as_deref().unwrap_or("未设置"),
-            global_email.as_deref().unwrap_or("未设置").cyan()
+            "Global:".green(),
+            global_name.as_deref().unwrap_or("Not set"),
+            global_email.as_deref().unwrap_or("Not set").cyan()
         );
     } else {
-        println!("  {} {}", "全局级:".dimmed(), "未设置".dimmed());
+        println!("  {} {}", "Global:".dimmed(), "Not set".dimmed());
     }
 
     println!();
@@ -49,7 +49,7 @@ pub fn execute() -> Result<()> {
     let effective_email = git.get_effective_user_email();
 
     if let (Some(name), Some(email)) = (&effective_name, &effective_email) {
-        println!("  {} {} <{}>", "实际使用:".bold(), name, email.cyan());
+        println!("  {} {} <{}>", "Effective:".bold(), name, email.cyan());
 
         // 尝试匹配已知身份
         let matched = config
@@ -60,7 +60,7 @@ pub fn execute() -> Result<()> {
         if let Some(identity) = matched {
             println!(
                 "  {} {}",
-                "身份 ID:".green(),
+                "Identity ID:".green(),
                 format!("[{}]", identity.id).green().bold()
             );
             if let Some(ref desc) = identity.description {
@@ -72,19 +72,19 @@ pub fn execute() -> Result<()> {
             if let Some(identity) = email_matched {
                 println!(
                     "  {} {} {}",
-                    "可能是:".yellow(),
+                    "Possibly:".yellow(),
                     format!("[{}]", identity.id).yellow(),
-                    "(名称不匹配)".dimmed()
+                    "(Name mismatch)".dimmed()
                 );
             } else {
-                println!("  {} {}", "⚠".yellow(), "未匹配到已配置的身份".yellow());
+                println!("  {} {}", "⚠".yellow(), "No configured identity matched".yellow());
             }
         }
     } else {
-        println!("{} 没有找到有效的 Git 用户配置", "⚠".yellow());
+        println!("{} No valid Git user configuration found", "⚠".yellow());
         println!();
-        println!("运行 {} 添加身份", "gid add".cyan());
-        println!("运行 {} 切换身份", "gid switch <id>".cyan());
+        println!("Run {} to add identity", "gid add".cyan());
+        println!("Run {} to switch identity", "gid switch <id>".cyan());
     }
 
     // 显示仓库信息

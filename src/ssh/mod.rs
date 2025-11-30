@@ -214,4 +214,91 @@ Host {}
         self.add_host_config(&host_alias, hostname, key_path, "git")?;
         Ok(host_alias)
     }
+
+    /// 检查 ssh-agent 是否运行
+    pub fn is_agent_running(&self) -> bool {
+        std::process::Command::new("ssh-add")
+            .arg("-l")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }
+
+    /// 添加密钥到 ssh-agent
+    pub fn add_to_agent(&self, key_path: &Path) -> Result<()> {
+        let expanded = self.expand_path(key_path);
+
+        if !expanded.exists() {
+            anyhow::bail!("SSH 密钥文件不存在: {}", expanded.display());
+        }
+
+        let output = std::process::Command::new("ssh-add")
+            .arg(expanded.to_str().unwrap())
+            .output()
+            .context("无法执行 ssh-add")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("添加密钥到 ssh-agent 失败: {}", stderr);
+        }
+
+        Ok(())
+    }
+
+    /// 从 ssh-agent 移除密钥
+    pub fn remove_from_agent(&self, key_path: &Path) -> Result<()> {
+        let expanded = self.expand_path(key_path);
+
+        let output = std::process::Command::new("ssh-add")
+            .arg("-d")
+            .arg(expanded.to_str().unwrap())
+            .output()
+            .context("无法执行 ssh-add")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            // 忽略密钥不存在的错误
+            if !stderr.contains("not found") {
+                anyhow::bail!("从 ssh-agent 移除密钥失败: {}", stderr);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// 列出 ssh-agent 中的密钥
+    pub fn list_agent_keys(&self) -> Result<Vec<String>> {
+        let output = std::process::Command::new("ssh-add")
+            .arg("-l")
+            .output()
+            .context("无法执行 ssh-add")?;
+
+        if !output.status.success() {
+            return Ok(Vec::new());
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let keys = stdout
+            .lines()
+            .filter(|line| !line.is_empty())
+            .map(|line| line.to_string())
+            .collect();
+
+        Ok(keys)
+    }
+
+    /// 清空 ssh-agent 中的所有密钥
+    pub fn clear_agent(&self) -> Result<()> {
+        let output = std::process::Command::new("ssh-add")
+            .arg("-D")
+            .output()
+            .context("无法执行 ssh-add")?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("清空 ssh-agent 失败: {}", stderr);
+        }
+
+        Ok(())
+    }
 }

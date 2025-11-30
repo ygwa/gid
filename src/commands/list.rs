@@ -8,13 +8,13 @@ pub fn execute() -> Result<()> {
     let config = Config::load()?;
 
     if config.identities.is_empty() {
-        println!("{} 没有配置任何身份", "!".yellow());
+        println!("{} No identities configured", "!".yellow());
         println!();
-        println!("运行 {} 添加新身份", "gid add".cyan());
+        println!("Run {} to add a new identity", "gid add".cyan());
         return Ok(());
     }
 
-    println!("{}", "已配置的身份:".bold());
+    println!("{}", "Configured Identities:".bold());
     println!();
 
     for identity in &config.identities {
@@ -46,7 +46,7 @@ pub fn execute() -> Result<()> {
         println!();
     }
 
-    println!("共 {} 个身份", config.identities.len().to_string().bold());
+    println!("Total {} identities", config.identities.len().to_string().bold());
 
     Ok(())
 }

@@ -1,15 +1,15 @@
 # gid - Git Identity Manager
 
 <p align="center">
-  <strong>🔄 Git 身份管理的完整解决方案</strong>
+  <strong>🔄 A complete solution for managing multiple Git identities</strong>
 </p>
 
 <p align="center">
-  <a href="#特性">特性</a> •
-  <a href="#安装">安装</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#使用方法">使用方法</a> •
-  <a href="#配置">配置</a>
+  <a href="#features">Features</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#configuration">Configuration</a>
 </p>
 
 <p align="center">
@@ -20,228 +20,228 @@
 
 ---
 
-## ✨ 特性
+## ✨ Features
 
-- 🚀 **一键切换** - 快速在多个 Git 身份之间切换
-- 📋 **智能规则** - 基于路径或 Remote URL 自动匹配身份
-- 🔑 **SSH 联动** - 自动配置 SSH 密钥
-- 🔏 **GPG 签名** - 支持提交签名密钥管理
-- 🪝 **Git Hooks** - 提交前自动检查身份
-- 📊 **审计功能** - 检查历史提交中的身份问题
-- 🌍 **跨平台** - 原生支持 Linux、macOS 和 Windows
-- ⚡ **高性能** - Rust 编写，启动速度极快
+- 🚀 **One-click Switch** - Quickly switch between multiple Git identities
+- 📋 **Smart Rules** - Automatically match identities based on path or remote URL
+- 🔑 **SSH Integration** - Automatically configure SSH keys
+- 🔏 **GPG Signing** - Support commit signing key management
+- 🪝 **Git Hooks** - Automatically check identity before commit
+- 📊 **Audit** - Check for identity issues in commit history
+- 🌍 **Cross-platform** - Native support for Linux, macOS, and Windows
+- ⚡ **High Performance** - Written in Rust, extremely fast startup
 
-## 📦 安装
+## 📦 Installation
 
-### 从源码编译
+### Build from Source
 
 ```bash
-# 克隆仓库
-git clone https://github.com/your-username/gid.git
+# Clone repository
+git clone https://github.com/ygwa/gid.git
 cd gid
 
-# 编译安装
+# Install
 cargo install --path .
 
-# 或者使用 release 模式
+# Or build release
 cargo build --release
 sudo cp target/release/gid /usr/local/bin/
 ```
 
-### Homebrew (即将支持)
+### Homebrew (Coming Soon)
 
 ```bash
-brew install your-username/tap/gid
+brew install ygwa/tap/gid
 ```
 
-### 下载预编译二进制
+### Download Binary
 
-从 [Releases](https://github.com/your-username/gid/releases) 页面下载对应平台的二进制文件。
+Download binaries for your platform from the [Releases](https://github.com/ygwa/gid/releases) page.
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 1. 添加身份
+### 1. Add Identity
 
 ```bash
-# 交互式添加
+# Interactive add
 gid add
 
-# 或直接指定参数
-gid add --id work --name "张三" --email "zhangsan@company.com"
+# Or specify arguments
+gid add --id work --name "John Doe" --email "john@company.com"
 ```
 
-### 2. 切换身份
+### 2. Switch Identity
 
 ```bash
-# 切换当前项目的身份
+# Switch identity for current project
 gid switch work
 
-# 切换全局身份
+# Switch global identity
 gid switch -g personal
 ```
 
-### 3. 设置规则（自动切换）
+### 3. Set Rules (Auto Switch)
 
 ```bash
-# 添加路径规则
+# Add path rule
 gid rule add -t path -p "~/work/**" -i work
 
-# 添加 Remote URL 规则
+# Add remote URL rule
 gid rule add -t remote -p "github.com/my-company/*" -i work
 
-# 自动应用规则
+# Apply rules automatically
 gid auto
 ```
 
-### 4. 安装 Git Hook
+### 4. Install Git Hook
 
 ```bash
-# 安装到当前仓库
+# Install to current repository
 gid hook install
 
-# 或全局安装
+# Or install globally
 gid hook install -g
 ```
 
-## 📖 使用方法
+## 📖 Usage
 
 ```
 gid - Git Identity Manager
 
-用法: gid <命令>
+Usage: gid <COMMAND>
 
-命令:
-  switch       切换到指定身份
-  list         列出所有身份
-  current      显示当前身份
-  add          添加新身份
-  remove       删除身份
-  edit         编辑配置文件
-  export       导出配置
-  import       导入配置
-  rule         管理规则
-  doctor       检查身份配置问题
-  auto         根据规则自动切换
-  hook         管理 Git hooks
-  audit        审计提交历史
-  completions  生成 Shell 补全脚本
-  help         显示帮助
+Commands:
+  switch       Switch to specified identity
+  list         List all identities
+  current      Show current identity
+  add          Add a new identity
+  remove       Remove an identity
+  edit         Edit configuration file
+  export       Export configuration
+  import       Import configuration
+  rule         Manage rules
+  doctor       Check identity configuration issues
+  auto         Automatically switch identity based on rules
+  hook         Manage Git hooks
+  audit        Audit commit history
+  completions  Generate shell completion scripts
+  help         Print this message or the help of the given subcommand(s)
 
-选项:
-  -h, --help     显示帮助
-  -V, --version  显示版本
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
-### 身份管理
+### Identity Management
 
 ```bash
-# 列出所有身份
+# List all identities
 gid list
 
-# 查看当前身份
+# Show current identity
 gid current
 
-# 添加身份（交互式）
+# Add identity (interactive)
 gid add
 
-# 添加身份（带 SSH 和 GPG）
+# Add identity (with SSH and GPG)
 gid add --id work \
-  --name "张三" \
-  --email "zhangsan@company.com" \
+  --name "John Doe" \
+  --email "john@company.com" \
   --ssh-key ~/.ssh/id_work \
   --gpg-key ABCD1234
 
-# 删除身份
+# Remove identity
 gid remove work
 ```
 
-### 规则管理
+### Rule Management
 
 ```bash
-# 添加路径规则
+# Add path rule
 gid rule add -t path -p "~/work/**" -i work
 
-# 添加 Remote URL 规则
+# Add remote URL rule
 gid rule add -t remote -p "github.com/company/*" -i work
 
-# 列出所有规则
+# List all rules
 gid rule list
 
-# 测试规则匹配
+# Test rule matching
 gid rule test
 
-# 删除规则
+# Remove rule
 gid rule remove 0
 ```
 
-### 检查与自动切换
+### Check and Auto Switch
 
 ```bash
-# 检查当前目录的身份配置
+# Check identity configuration in current directory
 gid doctor
 
-# 自动修复
+# Auto fix
 gid doctor --fix
 
-# 根据规则自动切换
+# Auto switch based on rules
 gid auto
 ```
 
 ### Git Hooks
 
 ```bash
-# 安装 pre-commit hook（当前仓库）
+# Install pre-commit hook (current repo)
 gid hook install
 
-# 安装全局 hook
+# Install global hook
 gid hook install -g
 
-# 查看 hook 状态
+# Check hook status
 gid hook status
 
-# 卸载 hook
+# Uninstall hook
 gid hook uninstall
 ```
 
-### 审计
+### Audit
 
 ```bash
-# 审计当前仓库
+# Audit current repository
 gid audit
 
-# 审计指定目录
+# Audit specified directory
 gid audit --path ~/projects
 ```
 
-## ⚙️ 配置
+## ⚙️ Configuration
 
-### 配置文件位置
+### Configuration File Location
 
 - Linux/macOS: `~/.config/gid/config.toml`
 - Windows: `%APPDATA%\gid\config\config.toml`
 
-可通过 `GID_CONFIG_DIR` 环境变量自定义。
+Can be customized via `GID_CONFIG_DIR` environment variable.
 
-### 配置文件格式
+### Configuration Format
 
 ```toml
-# 身份列表
+# Identity List
 [[identities]]
 id = "work"
-name = "张三"
-email = "zhangsan@company.com"
-description = "工作身份"
+name = "John Doe"
+email = "john@company.com"
+description = "Work Identity"
 ssh_key = "~/.ssh/id_work"
 gpg_key = "ABCD1234"
 gpg_sign = true
 
 [[identities]]
 id = "personal"
-name = "张三"
-email = "zhangsan@gmail.com"
-description = "个人身份"
+name = "John Doe"
+email = "john@gmail.com"
+description = "Personal Identity"
 
-# 规则列表
+# Rule List
 [[rules]]
 type = "path"
 pattern = "~/work/**"
@@ -254,7 +254,7 @@ pattern = "github.com/my-company/*"
 identity = "work"
 priority = 50
 
-# 设置
+# Settings
 [settings]
 verbose = true
 color = true
@@ -263,15 +263,15 @@ pre_commit_check = true
 strict_mode = false
 ```
 
-### 项目配置 (.gid)
+### Project Config (.gid)
 
-在项目根目录创建 `.gid` 文件指定默认身份：
+Create a `.gid` file in the project root to specify the default identity:
 
 ```
 work
 ```
 
-## 🐚 Shell 补全
+## 🐚 Shell Completion
 
 ```bash
 # Bash
@@ -287,46 +287,46 @@ gid completions fish > ~/.config/fish/completions/gid.fish
 gid completions powershell > gid.ps1
 ```
 
-## 🔧 开发
+## 🔧 Development
 
-### 构建
+### Build
 
 ```bash
-# Debug 模式
+# Debug mode
 cargo build
 
-# Release 模式
+# Release mode
 cargo build --release
 
-# 运行测试
+# Run tests
 cargo test
 ```
 
-### 目录结构
+### Directory Structure
 
 ```
 src/
-├── main.rs           # 入口
-├── cli.rs            # CLI 定义
-├── commands/         # 命令实现
-├── config/           # 配置管理
-├── rules/            # 规则引擎
-├── git/              # Git 操作
-├── ssh/              # SSH 管理
-├── gpg/              # GPG 管理
-└── audit/            # 审计功能
+├── main.rs           # Entry point
+├── cli.rs            # CLI definition
+├── commands/         # Command implementations
+├── config/           # Configuration management
+├── rules/            # Rule engine
+├── git/              # Git operations
+├── ssh/              # SSH management
+├── gpg/              # GPG management
+└── audit/            # Audit functionality
 ```
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎贡献代码！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## 📄 许可证
+## 📄 License
 
-MIT License - 查看 [LICENSE](LICENSE) 文件。
+MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
 <p align="center">
-  如果这个工具对你有帮助，请给一个 ⭐️
+  If this tool helps you, please give it a ⭐️
 </p>

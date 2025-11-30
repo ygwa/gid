@@ -9,22 +9,22 @@ use crate::config::Config;
 /// 导入配置
 pub fn execute(file: &Path) -> Result<()> {
     if !file.exists() {
-        anyhow::bail!("文件不存在: {}", file.display());
+        anyhow::bail!("File not found: {}", file.display());
     }
 
     // 读取并解析导入文件
     let content =
-        fs::read_to_string(file).with_context(|| format!("无法读取文件: {}", file.display()))?;
+        fs::read_to_string(file).with_context(|| format!("Could not read file: {}", file.display()))?;
 
-    let import_config: Config = toml::from_str(&content).with_context(|| "配置文件格式错误")?;
+    let import_config: Config = toml::from_str(&content).with_context(|| "Configuration file format error")?;
 
     if import_config.identities.is_empty() && import_config.rules.is_empty() {
-        println!("{} 文件中没有找到有效的配置", "!".yellow());
+        println!("{} No valid configuration found in file", "!".yellow());
         return Ok(());
     }
 
     println!(
-        "发现 {} 个身份, {} 条规则",
+        "Found {} identities, {} rules",
         import_config.identities.len(),
         import_config.rules.len()
     );
@@ -35,13 +35,13 @@ pub fn execute(file: &Path) -> Result<()> {
 
     if had_existing {
         println!();
-        println!("{}", "导入选项:".cyan());
-        println!("  1. 合并（保留现有，添加新的）");
-        println!("  2. 替换（删除现有配置）");
-        println!("  3. 取消");
+        println!("{}", "Import Options:".cyan());
+        println!("  1. Merge (keep existing, add new)");
+        println!("  2. Replace (delete existing configuration)");
+        println!("  3. Cancel");
 
         let choice: String = dialoguer::Input::new()
-            .with_prompt("选择 [1/2/3]")
+            .with_prompt("Select [1/2/3]")
             .default("1".to_string())
             .interact_text()?;
 
@@ -68,19 +68,19 @@ pub fn execute(file: &Path) -> Result<()> {
                 config.save()?;
 
                 println!();
-                println!("{} 导入完成:", "✓".green());
-                println!("  身份: 添加 {added_identities}, 跳过 {skipped_identities} (已存在)");
-                println!("  规则: 添加 {added_rules}");
+                println!("{} Import complete:", "✓".green());
+                println!("  Identities: Added {added_identities}, Skipped {skipped_identities} (already exists)");
+                println!("  Rules: Added {added_rules}");
             }
             "2" => {
                 // 替换模式
                 let confirm = Confirm::new()
-                    .with_prompt("确定要替换现有配置吗? 此操作不可撤销")
+                    .with_prompt("Are you sure you want to replace existing configuration? This cannot be undone")
                     .default(false)
                     .interact()?;
 
                 if !confirm {
-                    println!("操作已取消");
+                    println!("Operation cancelled");
                     return Ok(());
                 }
 
@@ -89,20 +89,20 @@ pub fn execute(file: &Path) -> Result<()> {
                 let backup_path = config_path.with_extension("toml.backup");
                 if config_path.exists() {
                     fs::copy(&config_path, &backup_path)?;
-                    println!("{} 已备份到: {}", "→".blue(), backup_path.display());
+                    println!("{} Backed up to: {}", "→".blue(), backup_path.display());
                 }
 
                 import_config.save()?;
 
                 println!(
-                    "{} 配置已替换: {} 个身份, {} 条规则",
+                    "{} Configuration replaced: {} identities, {} rules",
                     "✓".green(),
                     import_config.identities.len(),
                     import_config.rules.len()
                 );
             }
             _ => {
-                println!("操作已取消");
+                println!("Operation cancelled");
                 return Ok(());
             }
         }
@@ -111,7 +111,7 @@ pub fn execute(file: &Path) -> Result<()> {
         import_config.save()?;
 
         println!(
-            "{} 配置已导入: {} 个身份, {} 条规则",
+            "{} Configuration imported: {} identities, {} rules",
             "✓".green(),
             import_config.identities.len(),
             import_config.rules.len()

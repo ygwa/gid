@@ -11,24 +11,24 @@ pub fn execute(identity_id: &str) -> Result<()> {
     // 查找身份
     let identity = config
         .find_identity(identity_id)
-        .ok_or_else(|| anyhow::anyhow!("找不到身份 '{identity_id}'"))?
+        .ok_or_else(|| anyhow::anyhow!("Identity '{identity_id}' not found"))?
         .clone();
 
     // 确认删除
     println!(
-        "将要删除身份: {} {} <{}>",
+        "About to remove identity: {} {} <{}>",
         format!("[{}]", identity.id).yellow(),
         identity.name,
         identity.email
     );
 
     let confirm = Confirm::new()
-        .with_prompt("确定要删除吗?")
+        .with_prompt("Are you sure you want to remove?")
         .default(false)
         .interact()?;
 
     if !confirm {
-        println!("操作已取消");
+        println!("Operation cancelled");
         return Ok(());
     }
 
@@ -36,7 +36,7 @@ pub fn execute(identity_id: &str) -> Result<()> {
     config.remove_identity(identity_id)?;
     config.save()?;
 
-    println!("{} 身份 '{}' 已删除", "✓".green(), identity_id);
+    println!("{} Identity '{}' removed", "✓".green(), identity_id);
 
     Ok(())
 }

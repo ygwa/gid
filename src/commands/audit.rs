@@ -12,8 +12,8 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
 
     let target_path = path.unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
 
-    println!("{}", "审计 Git 提交历史...".bold());
-    println!("  目标: {}", target_path.display().to_string().cyan());
+    println!("{}", "Auditing Git commit history...".bold());
+    println!("  Target: {}", target_path.display().to_string().cyan());
     println!();
 
     // 检查是单个仓库还是目录
@@ -24,7 +24,7 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
     };
 
     if results.is_empty() {
-        println!("{} 没有找到 Git 仓库", "!".yellow());
+        println!("{} No Git repository found", "!".yellow());
         return Ok(());
     }
 
@@ -39,7 +39,7 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
     println!();
     println!("{}", "═".repeat(50));
     println!(
-        "审计完成: {} 个仓库, {} 个问题",
+        "Audit complete: {} repositories, {} issues",
         results.len(),
         if total_issues > 0 {
             total_issues.to_string().yellow().to_string()
@@ -50,9 +50,9 @@ pub fn execute(path: Option<PathBuf>, fix: bool) -> Result<()> {
 
     if total_issues > 0 && fix {
         println!();
-        println!("{} 自动修复暂不支持提交历史修改", "!".yellow());
-        println!("  提交历史的修改需要使用 git rebase 或 git filter-branch");
-        println!("  建议手动处理或使用专门的工具如 git-filter-repo");
+        println!("{} Automatic fix does not support commit history modification yet", "!".yellow());
+        println!("  Modifying commit history requires git rebase or git filter-branch");
+        println!("  Manual handling or specialized tools like git-filter-repo are recommended");
     }
 
     Ok(())

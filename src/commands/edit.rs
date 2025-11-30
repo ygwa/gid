@@ -12,7 +12,7 @@ pub fn execute() -> Result<()> {
     if !config_path.exists() {
         let config = Config::default();
         config.save()?;
-        println!("{} 已创建配置文件: {}", "→".blue(), config_path.display());
+        println!("{} Configuration file created: {}", "→".blue(), config_path.display());
     }
 
     // 获取编辑器
@@ -26,32 +26,32 @@ pub fn execute() -> Result<()> {
             }
         });
 
-    println!("{} 使用 {} 编辑配置文件...", "→".blue(), editor);
+    println!("{} Editing configuration file using {}...", "→".blue(), editor);
     println!("  {}", config_path.display().to_string().dimmed());
 
     // 打开编辑器
     let status = Command::new(&editor)
         .arg(&config_path)
         .status()
-        .with_context(|| format!("无法启动编辑器: {editor}"))?;
+        .with_context(|| format!("Failed to start editor: {editor}"))?;
 
     if !status.success() {
-        anyhow::bail!("编辑器退出异常");
+        anyhow::bail!("Editor exited abnormally");
     }
 
     // 验证配置文件
     match Config::load() {
         Ok(config) => {
             println!(
-                "{} 配置文件有效，包含 {} 个身份，{} 条规则",
+                "{} Configuration valid, contains {} identities, {} rules",
                 "✓".green(),
                 config.identities.len(),
                 config.rules.len()
             );
         }
         Err(e) => {
-            println!("{} 配置文件格式错误: {}", "✗".red(), e);
-            println!("请修复配置文件后重试");
+            println!("{} Configuration format error: {}", "✗".red(), e);
+            println!("Please fix the configuration file and try again");
         }
     }
 

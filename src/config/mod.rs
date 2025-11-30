@@ -1,4 +1,5 @@
 pub mod identity;
+pub mod project;
 pub mod settings;
 
 use anyhow::{Context, Result};
@@ -7,6 +8,7 @@ use std::fs;
 use std::path::PathBuf;
 
 pub use identity::Identity;
+pub use project::ProjectConfig;
 pub use settings::Settings;
 
 use crate::rules::Rule;

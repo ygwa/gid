@@ -6,6 +6,7 @@ pub mod current;
 pub mod doctor;
 pub mod edit;
 pub mod export;
+pub mod fix_commit;
 pub mod hook;
 pub mod import;
 pub mod list;

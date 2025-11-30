@@ -4,10 +4,10 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(
     name = "gid",
-    about = "Git Identity Manager - 管理多个 Git 身份的完整解决方案",
+    about = "Git Identity Manager - A complete solution for managing multiple Git identities",
     version,
     author,
-    after_help = "更多信息请访问: https://github.com/your-username/gid"
+    after_help = "For more information: https://github.com/your-username/gid"
 )]
 pub struct Cli {
     #[command(subcommand)]
@@ -16,111 +16,130 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// 切换到指定身份
+    /// Switch to a specified identity
     #[command(visible_alias = "sw")]
     Switch {
-        /// 身份 ID
+        /// Identity ID
         identity: String,
 
-        /// 全局切换（影响所有仓库）
+        /// Global switch (affects all repositories)
         #[arg(short, long)]
         global: bool,
     },
 
-    /// 列出所有身份
+    /// List all identities
     #[command(visible_alias = "ls")]
     List,
 
-    /// 显示当前身份
+    /// Show current identity
     #[command(visible_alias = "c")]
     Current,
 
-    /// 添加新身份
+    /// Add a new identity
     Add {
-        /// 身份 ID（如：work, personal）
+        /// Identity ID (e.g., work, personal)
         #[arg(short, long)]
         id: Option<String>,
 
-        /// 姓名
+        /// Name
         #[arg(short, long)]
         name: Option<String>,
 
-        /// 邮箱
+        /// Email
         #[arg(short, long)]
         email: Option<String>,
 
-        /// 描述
+        /// Description
         #[arg(short, long)]
         description: Option<String>,
 
-        /// SSH 私钥路径
+        /// SSH private key path
         #[arg(long)]
         ssh_key: Option<PathBuf>,
 
-        /// GPG 密钥 ID
+        /// GPG key ID
         #[arg(long)]
         gpg_key: Option<String>,
     },
 
-    /// 删除身份
+    /// Remove an identity
     #[command(visible_alias = "rm")]
     Remove {
-        /// 要删除的身份 ID
+        /// Identity ID to remove
         identity: String,
     },
 
-    /// 编辑配置文件
+    /// Edit configuration file
     Edit,
 
-    /// 导出配置
+    /// Export configuration
     Export {
-        /// 导出文件路径
+        /// Export file path
         #[arg(default_value = "gid-config.toml")]
         file: PathBuf,
     },
 
-    /// 导入配置
+    /// Import configuration
     Import {
-        /// 要导入的文件路径
+        /// File path to import
         file: PathBuf,
     },
 
-    /// 管理规则
+    /// Manage rules
     Rule {
         #[command(subcommand)]
         action: RuleAction,
     },
 
-    /// 检查当前目录的身份配置
+    /// Check identity configuration in current directory
     Doctor {
-        /// 自动修复问题
+        /// Automatically fix issues
         #[arg(short, long)]
         fix: bool,
     },
 
-    /// 根据规则自动切换身份
+    /// Automatically switch identity based on rules
     Auto,
 
-    /// 管理 Git hooks
+    /// Manage Git hooks
     Hook {
         #[command(subcommand)]
         action: HookAction,
     },
 
-    /// 审计提交历史中的身份信息
+    /// Audit identity information in commit history
     Audit {
-        /// 要审计的路径（默认当前目录）
+        /// Path to audit (defaults to current directory)
         #[arg(short, long)]
         path: Option<PathBuf>,
 
-        /// 尝试修复问题
+        /// Attempt to fix issues
         #[arg(short, long)]
         fix: bool,
     },
 
-    /// 生成 Shell 补全脚本
+    /// Fix identity information in commits
+    FixCommit {
+        /// Commit to fix (defaults to HEAD)
+        #[arg(default_value = "HEAD")]
+        commit: String,
+
+        /// Use specified identity (defaults to current identity)
+        #[arg(short, long)]
+        identity: Option<String>,
+
+        /// Batch fix commit range (e.g., HEAD~3..HEAD)
+        #[arg(short, long)]
+        range: Option<String>,
+
+        /// Skip confirmation prompts
+        #[arg(short = 'y', long)]
+        yes: bool,
+    },
+
+    /// Generate shell completion scripts
     Completions {
-        /// Shell 类型
+        /// Shell type
         #[arg(value_enum)]
         shell: ShellType,
     },
@@ -128,41 +147,41 @@ pub enum Commands {
 
 #[derive(Subcommand, Clone)]
 pub enum RuleAction {
-    /// 添加规则
+    /// Add a rule
     Add {
-        /// 规则类型
+        /// Rule type
         #[arg(short, long, value_enum)]
         rule_type: RuleType,
 
-        /// 匹配模式
+        /// Match pattern
         #[arg(short, long)]
         pattern: String,
 
-        /// 匹配后使用的身份
+        /// Identity to use when matched
         #[arg(short, long)]
         identity: String,
 
-        /// 规则优先级（数字越小优先级越高）
+        /// Rule priority (lower number = higher priority)
         #[arg(long, default_value = "100")]
         priority: u32,
     },
 
-    /// 列出所有规则
+    /// List all rules
     List,
 
-    /// 删除规则
+    /// Remove a rule
     Remove {
-        /// 规则索引
+        /// Rule index
         index: usize,
     },
 
-    /// 测试规则匹配
+    /// Test rule matching
     Test {
-        /// 测试路径
+        /// Test path
         #[arg(short, long)]
         path: Option<PathBuf>,
 
-        /// 测试 remote URL
+        /// Test remote URL
         #[arg(short, long)]
         remote: Option<String>,
     },
@@ -170,29 +189,29 @@ pub enum RuleAction {
 
 #[derive(Subcommand, Clone)]
 pub enum HookAction {
-    /// 安装 Git hook
+    /// Install Git hook
     Install {
-        /// 全局安装（使用 core.hooksPath）
+        /// Global installation (using core.hooksPath)
         #[arg(short, long)]
         global: bool,
     },
 
-    /// 卸载 Git hook
+    /// Uninstall Git hook
     Uninstall {
-        /// 全局卸载
+        /// Global uninstallation
         #[arg(short, long)]
         global: bool,
     },
 
-    /// 显示 hook 状态
+    /// Show hook status
     Status,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum RuleType {
-    /// 路径匹配规则
+    /// Path matching rule
     Path,
-    /// Remote URL 匹配规则
+    /// Remote URL matching rule
     Remote,
 }
 

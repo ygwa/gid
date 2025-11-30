@@ -1,4 +1,4 @@
-use anyhow::Result;
+
 use glob::Pattern;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -279,24 +279,7 @@ fn normalize_git_url(url: &str) -> String {
     url.to_string()
 }
 
-/// 从项目目录加载 .gid 配置文件
-pub fn load_project_config(path: &Path) -> Result<Option<String>> {
-    let gid_file = path.join(".gid");
 
-    if !gid_file.exists() {
-        return Ok(None);
-    }
-
-    let content = std::fs::read_to_string(&gid_file)?;
-
-    // 简单格式：直接是身份 ID
-    let identity = content.trim().to_string();
-    if !identity.is_empty() && !identity.starts_with('#') {
-        return Ok(Some(identity));
-    }
-
-    Ok(None)
-}
 
 impl std::fmt::Display for Rule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

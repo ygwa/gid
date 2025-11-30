@@ -18,7 +18,7 @@ pub fn execute(
 ) -> Result<()> {
     let mut config = Config::load()?;
 
-    println!("{}", "添加新的 Git 身份".bold());
+    println!("{}", "Add new Git identity".bold());
     println!();
 
     // 获取身份 ID
@@ -26,7 +26,7 @@ pub fn execute(
         id
     } else {
         Input::<String>::new()
-            .with_prompt("身份 ID (如: work, personal)")
+            .with_prompt("Identity ID (e.g., work, personal)")
             .interact_text()?
     };
 
@@ -35,34 +35,34 @@ pub fn execute(
         .chars()
         .all(|c| c.is_alphanumeric() || c == '_' || c == '-')
     {
-        anyhow::bail!("身份 ID 只能包含字母、数字、下划线和连字符");
+        anyhow::bail!("Identity ID can only contain letters, numbers, underscores, and hyphens");
     }
 
     // 检查 ID 是否已存在
     if config.find_identity(&id).is_some() {
-        anyhow::bail!("身份 '{id}' 已存在");
+        anyhow::bail!("Identity '{id}' already exists");
     }
 
     // 获取姓名
     let name = if let Some(name) = name {
         name
     } else {
-        Input::<String>::new().with_prompt("姓名").interact_text()?
+        Input::<String>::new().with_prompt("Name").interact_text()?
     };
 
     if name.is_empty() {
-        anyhow::bail!("姓名不能为空");
+        anyhow::bail!("Name cannot be empty");
     }
 
     // 获取邮箱
     let email = if let Some(email) = email {
         email
     } else {
-        Input::<String>::new().with_prompt("邮箱").interact_text()?
+        Input::<String>::new().with_prompt("Email").interact_text()?
     };
 
     if !email.contains('@') || !email.contains('.') {
-        anyhow::bail!("邮箱格式不正确");
+        anyhow::bail!("Invalid email format");
     }
 
     // 获取描述
@@ -70,7 +70,7 @@ pub fn execute(
         description
     } else {
         let desc: String = Input::new()
-            .with_prompt("描述 (可选，直接回车跳过)")
+            .with_prompt("Description (optional, press Enter to skip)")
             .allow_empty(true)
             .interact_text()?;
         if desc.is_empty() {
@@ -85,7 +85,7 @@ pub fn execute(
         ssh_key
     } else {
         let configure_ssh = Confirm::new()
-            .with_prompt("是否配置 SSH 密钥?")
+            .with_prompt("Configure SSH key?")
             .default(false)
             .interact()?;
 
@@ -101,7 +101,7 @@ pub fn execute(
         gpg_key
     } else {
         let configure_gpg = Confirm::new()
-            .with_prompt("是否配置 GPG 签名密钥?")
+            .with_prompt("Configure GPG signing key?")
             .default(false)
             .interact()?;
 
@@ -125,7 +125,7 @@ pub fn execute(
 
     println!();
     println!(
-        "{} 身份已添加: {} {} <{}>",
+        "{} Identity added: {} {} <{}>",
         "✓".green(),
         format!("[{id}]").green().bold(),
         name,
@@ -133,22 +133,22 @@ pub fn execute(
     );
 
     if ssh_key.is_some() {
-        println!("  {} SSH 密钥已配置", "🔑".dimmed());
+        println!("  {} SSH key configured", "🔑".dimmed());
     }
     if gpg_key.is_some() {
-        println!("  {} GPG 签名已配置", "🔏".dimmed());
+        println!("  {} GPG signing configured", "🔏".dimmed());
     }
 
     // 询问是否立即切换
     println!();
     let switch_now = Confirm::new()
-        .with_prompt("是否立即切换到此身份?")
+        .with_prompt("Switch to this identity now?")
         .default(false)
         .interact()?;
 
     if switch_now {
         let global = Confirm::new()
-            .with_prompt("切换到全局配置?")
+            .with_prompt("Switch to global configuration?")
             .default(false)
             .interact()?;
 
@@ -163,40 +163,40 @@ fn configure_ssh_key(identity_id: &str, email: &str) -> Result<Option<PathBuf>> 
     let ssh = SshManager::new()?;
 
     println!();
-    println!("{}", "SSH 密钥配置:".cyan());
-    println!("  1. 使用现有密钥");
-    println!("  2. 生成新密钥");
-    println!("  3. 跳过");
+    println!("{}", "SSH Key Configuration:".cyan());
+    println!("  1. Use existing key");
+    println!("  2. Generate new key");
+    println!("  3. Skip");
 
     let choice: String = Input::new()
-        .with_prompt("选择 [1/2/3]")
+        .with_prompt("Select [1/2/3]")
         .default("3".to_string())
         .interact_text()?;
 
     match choice.trim() {
         "1" => {
             let key_path: String = Input::new()
-                .with_prompt("SSH 私钥路径")
+                .with_prompt("SSH private key path")
                 .default("~/.ssh/id_ed25519".to_string())
                 .interact_text()?;
 
             let path = PathBuf::from(shellexpand::tilde(&key_path).to_string());
 
             if !ssh.key_exists(&path) {
-                anyhow::bail!("密钥文件不存在: {}", path.display());
+                anyhow::bail!("Key file does not exist: {}", path.display());
             }
 
             Ok(Some(path))
         }
         "2" => {
-            println!("{} 生成新的 SSH 密钥...", "→".blue());
+            println!("{} Generating new SSH key...", "→".blue());
             let key_path = ssh.generate_key(identity_id, email)?;
-            println!("{} 密钥已生成: {}", "✓".green(), key_path.display());
+            println!("{} Key generated: {}", "✓".green(), key_path.display());
 
             // 显示公钥
             if let Ok(pub_key) = ssh.read_public_key(&key_path) {
                 println!();
-                println!("{}", "公钥内容 (添加到 GitHub/GitLab):".cyan());
+                println!("{}", "Public key content (add to GitHub/GitLab):".cyan());
                 println!("{}", pub_key.trim().dimmed());
             }
 
@@ -211,18 +211,18 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
     let gpg = GpgManager::new();
 
     if !gpg.is_available() {
-        println!("{} GPG 未安装，跳过配置", "!".yellow());
+        println!("{} GPG not installed, skipping configuration", "!".yellow());
         return Ok(None);
     }
 
     println!();
-    println!("{}", "GPG 签名配置:".cyan());
+    println!("{}", "GPG Signing Configuration:".cyan());
 
     // 查找现有密钥
     if let Ok(Some(key)) = gpg.find_key_by_email(email) {
-        println!("找到匹配的 GPG 密钥: {}", key.key_id);
+        println!("Found matching GPG key: {}", key.key_id);
         let use_existing = Confirm::new()
-            .with_prompt("使用此密钥?")
+            .with_prompt("Use this key?")
             .default(true)
             .interact()?;
 
@@ -231,29 +231,29 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
         }
     }
 
-    println!("  1. 输入现有密钥 ID");
-    println!("  2. 列出所有密钥");
-    println!("  3. 跳过");
+    println!("  1. Enter existing key ID");
+    println!("  2. List all keys");
+    println!("  3. Skip");
 
     let choice: String = Input::new()
-        .with_prompt("选择 [1/2/3]")
+        .with_prompt("Select [1/2/3]")
         .default("3".to_string())
         .interact_text()?;
 
     match choice.trim() {
         "1" => {
-            let key_id: String = Input::new().with_prompt("GPG 密钥 ID").interact_text()?;
+            let key_id: String = Input::new().with_prompt("GPG Key ID").interact_text()?;
 
             if gpg.verify_key(&key_id)? {
                 Ok(Some(key_id))
             } else {
-                anyhow::bail!("无效的 GPG 密钥 ID");
+                anyhow::bail!("Invalid GPG Key ID");
             }
         }
         "2" => {
             let keys = gpg.list_keys()?;
             if keys.is_empty() {
-                println!("{} 没有找到 GPG 密钥", "!".yellow());
+                println!("{} No GPG keys found", "!".yellow());
                 return Ok(None);
             }
 
@@ -264,7 +264,7 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
             println!();
 
             let index: String = Input::new()
-                .with_prompt("选择密钥序号 (直接回车跳过)")
+                .with_prompt("Select key index (press Enter to skip)")
                 .allow_empty(true)
                 .interact_text()?;
 
@@ -272,9 +272,9 @@ fn configure_gpg_key(email: &str) -> Result<Option<String>> {
                 return Ok(None);
             }
 
-            let index: usize = index.parse().map_err(|_| anyhow::anyhow!("无效的序号"))?;
+            let index: usize = index.parse().map_err(|_| anyhow::anyhow!("Invalid index"))?;
             if index == 0 || index > keys.len() {
-                anyhow::bail!("序号超出范围");
+                anyhow::bail!("Index out of range");
             }
 
             Ok(Some(keys[index - 1].key_id.clone()))

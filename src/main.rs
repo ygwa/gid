@@ -61,6 +61,14 @@ fn main() -> Result<()> {
         Commands::Audit { path, fix } => {
             commands::audit::execute(path, fix)?;
         }
+        Commands::FixCommit {
+            commit,
+            identity,
+            range,
+            yes,
+        } => {
+            commands::fix_commit::execute(&commit, identity, range, yes)?;
+        }
         Commands::Completions { shell } => {
             commands::completions::execute(shell)?;
         }
